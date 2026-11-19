@@ -42,7 +42,7 @@ export class NatTablePager<TData extends RowData = RowData> {
 
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly pageIndex = computed(() => this.table()?.getState().pagination.pageIndex ?? 0);
+  protected readonly pageIndex = computed(() => this.table()?.atoms.pagination.get().pageIndex ?? 0);
   protected readonly pageCount = computed(() => Math.max(1, this.table()?.getPageCount() ?? 0));
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
   protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);

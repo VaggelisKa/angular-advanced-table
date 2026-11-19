@@ -11,8 +11,8 @@ const mockOrderRows = generateMockOrderRows(50);
 
 const preconfiguredTableState: Partial<NatTableUserState> = {
   columnPinning: {
-    left: ['id'],
-    right: []
+    start: ['id'],
+    end: []
   }
 };
 

@@ -12,6 +12,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/docs/tanstack-v9-migration",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/docs/composition",
           "type": "text/html"
         },

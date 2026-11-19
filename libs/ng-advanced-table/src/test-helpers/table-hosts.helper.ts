@@ -18,14 +18,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import type {
-  ColumnDef,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   ColumnSizingState,
   PaginationState,
-  SortingState,
-  VisibilityState
+  SortingState
 } from '@tanstack/angular-table';
 
 import { provideNatTableIntl } from 'ng-advanced-table/locale';
@@ -34,6 +32,7 @@ import type { NatTableAccessibilityText, NatTableIntlStaticProviderConfig } from
 import { buildRows, columns, formatErrorMessage, reorderableColumns } from './table-data.helper';
 import type { Row } from './table-data.helper';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
+import type { ColumnDef, VisibilityState } from '../common/table-features.type';
 import type { NatTableMode, NatTableModeConfiguration, NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
@@ -87,7 +86,7 @@ const seedPreviousState = (bound: Partial<NatTableUserState>, initial: Partial<N
   columnFilters: pickSlice(bound.columnFilters, initial.columnFilters, []),
   columnVisibility: pickSlice(bound.columnVisibility, initial.columnVisibility, {}),
   columnOrder: pickSlice(bound.columnOrder, initial.columnOrder, []),
-  columnPinning: pickSlice(bound.columnPinning, initial.columnPinning, { left: [], right: [] }),
+  columnPinning: pickSlice(bound.columnPinning, initial.columnPinning, { start: [], end: [] }),
   columnSizing: pickSlice(bound.columnSizing, initial.columnSizing, {}),
   rowSelection: pickSlice(bound.rowSelection, initial.rowSelection, {}),
   pagination: pickSlice(bound.pagination, initial.pagination, { pageIndex: 0, pageSize: 10 })
@@ -213,7 +212,7 @@ export class TestTableSurface {
       columnFilters: [],
       columnVisibility: {},
       columnOrder: [],
-      columnPinning: { left: [], right: [] },
+      columnPinning: { start: [], end: [] },
       columnSizing: {},
       rowSelection: {},
       pagination: { pageIndex: 0, pageSize: 10 }
@@ -309,8 +308,8 @@ export class TableHost {
   public initialState: Partial<NatTableUserState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
-      left: ['name'],
-      right: []
+      start: ['name'],
+      end: []
     },
     pagination: {
       pageIndex: 0,
@@ -553,7 +552,7 @@ export const getInternalTable = (fixture: ComponentFixture<TableHost>): NatTable
 };
 
 export const getInternalStore = (fixture: ComponentFixture<TableHost>): NatTableState<Row> => {
-  return fixture.debugElement.query(By.directive(NatTable)).injector.get(NatTableState) as NatTableState<Row>;
+  return fixture.debugElement.query(By.directive(NatTable)).injector.get(NatTableState) as unknown as NatTableState<Row>;
 };
 
 export type RecreateHostOptions = {

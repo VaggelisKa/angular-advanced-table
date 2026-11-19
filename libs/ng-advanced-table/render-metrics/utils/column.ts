@@ -1,5 +1,6 @@
-import type { CellContext, ColumnDef, FilterFn, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { CellContext, ColumnDef, FilterFn } from 'ng-advanced-table';
 import {
   NAT_EN_LOCALE_ID,
   formatNatTableRenderMetricsNumber,

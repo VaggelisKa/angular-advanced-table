@@ -1,8 +1,9 @@
 import type { ElementRef, Signal } from '@angular/core';
 import { InjectionToken } from '@angular/core';
 
-import type { Column, Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { Column, Row } from './table-features.type';
 import type { NatTableUserState } from './table-state.type';
 import type { NatTableBodyState } from './table-status.type';
 

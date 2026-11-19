@@ -1,4 +1,6 @@
-import type { Cell, Column, Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Cell, Column, Row } from '../../common/table-features.type';
 
 /**
  * Finds a row's cell for a column id, or `null` when the column has no cell.
@@ -8,8 +10,7 @@ import type { Cell, Column, Row, RowData } from '@tanstack/angular-table';
  * O(columns) scan here would cost rows x columns^2 comparisons per pass.
  */
 export const findRowCell = <TData extends RowData>(row: Row<TData>, columnId: string): Cell<TData, unknown> | null =>
-  // eslint-disable-next-line no-underscore-dangle -- TanStack's memoized internal accessor; implementation files may import TanStack internals directly.
-  row._getAllCellsByColumnId()[columnId] ?? null;
+  row.getAllCellsByColumnId()[columnId] ?? null;
 
 /**
  * Whether the column resolves a plain-text field label (`meta.hiddenHeaderLabel`,

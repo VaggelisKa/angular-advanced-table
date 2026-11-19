@@ -59,7 +59,7 @@ export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePre
       // instead of letting the table overflow the region.
       ...(flags.enableColumnResizing ? { enableResizing: false } : {}),
       meta: { label: intl.headers.value, align: 'end' },
-      cell: (context: CellContext<DemoItem, number>): string => `$${context.getValue().toLocaleString()}`
+      cell: (context: CellContext<DemoItem, unknown>): string => `$${context.getValue<number>().toLocaleString()}`
     }
   ];
 

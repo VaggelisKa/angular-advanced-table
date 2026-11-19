@@ -1,9 +1,8 @@
 import { signal } from '@angular/core';
 
-import type { Row } from '@tanstack/angular-table';
-
 import { buildNatTableBodyRenderPlan } from './body-render-plan.util';
 import type { NatTableRowRenderStrategy } from '../common/row-render-strategy.type';
+import type { Row } from '../common/table-features.type';
 
 type TestRow = { readonly id: string };
 

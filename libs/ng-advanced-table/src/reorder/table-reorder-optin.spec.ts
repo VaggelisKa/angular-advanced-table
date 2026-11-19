@@ -4,8 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
+import type { ColumnDef } from '../common/table-features.type';
 import { columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { createDropEvent, getHeaderColumnIds, queryAll, queryRequired } from '../test-helpers/table-dom.helper';

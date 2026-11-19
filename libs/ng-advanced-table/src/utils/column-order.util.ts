@@ -1,6 +1,7 @@
-import type { Column, ColumnOrderState, ColumnPinningState, RowData } from '@tanstack/angular-table';
+import type { ColumnOrderState, ColumnPinningState, RowData } from '@tanstack/angular-table';
 
 import type { ColumnReorderKeyboardDirection, ColumnReorderZone } from '../common/column-render.type';
+import type { Column } from '../common/table-features.type';
 
 const uniqueStringValues = (values: readonly string[]): string[] => {
   const seen = new Set<string>();
@@ -53,19 +54,23 @@ export const retainColumnOrder = (columnOrder: readonly string[], allLeafColumnI
  * does not have survives a renderer swap. Render-facing state stays on
  * `normalizeColumnPinning`.
  */
-export const retainColumnPinning = (columnPinning: ColumnPinningState): ColumnPinningState => ({
-  left: uniqueStringValues(columnPinning.left ?? []),
-  right: uniqueStringValues(columnPinning.right ?? [])
+export const retainColumnPinning = (columnPinning: Partial<ColumnPinningState>): ColumnPinningState => ({
+  start: uniqueStringValues(columnPinning.start ?? []),
+  end: uniqueStringValues(columnPinning.end ?? [])
 });
 
-export const normalizeColumnPinning = (columnPinning: ColumnPinningState, allLeafColumnIds: readonly string[]): ColumnPinningState => {
+export const normalizeColumnPinning = (
+  // Partial: consumer state may still omit a zone, which v9 makes required.
+  columnPinning: Partial<ColumnPinningState>,
+  allLeafColumnIds: readonly string[]
+): ColumnPinningState => {
   const validColumnIds = new Set(allLeafColumnIds);
-  const leftColumnIds = columnPinning.left ?? [];
-  const rightColumnIds = columnPinning.right ?? [];
+  const startColumnIds = columnPinning.start ?? [];
+  const endColumnIds = columnPinning.end ?? [];
 
   return {
-    left: uniqueStringValues(leftColumnIds.filter((columnId) => validColumnIds.has(columnId))),
-    right: uniqueStringValues(rightColumnIds.filter((columnId) => validColumnIds.has(columnId)))
+    start: uniqueStringValues(startColumnIds.filter((columnId) => validColumnIds.has(columnId))),
+    end: uniqueStringValues(endColumnIds.filter((columnId) => validColumnIds.has(columnId)))
   };
 };
 
@@ -117,8 +122,8 @@ export const hasSameStringOrder = (left: readonly string[], right: readonly stri
   return left.every((value, index) => value === right[index]);
 };
 
-export const hasSameColumnPinning = (left: ColumnPinningState, right: ColumnPinningState): boolean =>
-  hasSameStringOrder(left.left ?? [], right.left ?? []) && hasSameStringOrder(left.right ?? [], right.right ?? []);
+export const hasSameColumnPinning = (left: Partial<ColumnPinningState>, right: Partial<ColumnPinningState>): boolean =>
+  hasSameStringOrder(left.start ?? [], right.start ?? []) && hasSameStringOrder(left.end ?? [], right.end ?? []);
 
 /** Accumulates sticky pinned offsets in iteration order: each column's offset is the running width sum before it. */
 export const accumulatePinnedOffsets = <TData extends RowData>(
@@ -149,11 +154,13 @@ export const resolvePinnedZoneColumns = <TData extends RowData>(
 export const getColumnZone = <TData extends RowData>(column: Column<TData, unknown>): ColumnReorderZone => {
   const pinnedState = column.getIsPinned();
 
-  if (pinnedState === 'left') {
+  // Reorder zones keep their physical names; TanStack v9 pins to logical
+  // `start`/`end`, which are `left`/`right` in a left-to-right table.
+  if (pinnedState === 'start') {
     return 'left';
   }
 
-  if (pinnedState === 'right') {
+  if (pinnedState === 'end') {
     return 'right';
   }
 

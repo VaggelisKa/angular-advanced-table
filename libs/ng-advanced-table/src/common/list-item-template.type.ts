@@ -1,6 +1,7 @@
-import type { RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import type { NatTableRow } from './cell-template.type';
+import type { Table } from './table-features.type';
 
 /** Context passed to `ng-template[natListItem]`. */
 export type NatListItemTemplateContext<TData extends RowData = RowData> = {

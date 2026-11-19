@@ -15,12 +15,13 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Cell, ColumnDef, FilterFn, RowData, Row as TanstackRow, Updater } from '@tanstack/angular-table';
+import type { RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import type { NatTableCellTemplateContext } from '../common/cell-template.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
+import type { Cell, ColumnDef, FilterFn, Row as TanstackRow } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type {
@@ -334,6 +335,7 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
     this.state.registerSeedEffect();
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();
+    this.state.registerOptionsSyncEffect();
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);

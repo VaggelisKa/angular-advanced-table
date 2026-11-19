@@ -1,21 +1,20 @@
 import type { Signal } from '@angular/core';
 
 import type {
-  CellContext,
-  Column,
+  CellData,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   ColumnSizingState,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
-  Table,
-  Updater,
-  VisibilityState
+  TableFeatures,
+  Updater
 } from '@tanstack/angular-table';
+
+import type { CellContext, Column, Row, Table, VisibilityState } from 'ng-advanced-table';
 
 /**
  * Serializable table-state shape expected by the render-metrics helpers.
@@ -123,8 +122,15 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly export?: NatTableColumnExportOptions<TData, TValue>;
 };
 
+// TFeatures is unused but must match TanStack's v9 meta signatures to merge.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 declare module '@tanstack/table-core' {
   // Module augmentation requires an interface; the empty body merges our metadata into ColumnMeta.
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
-  interface ColumnMeta<TData extends RowData, TValue> extends NatTableColumnMeta<TData, TValue> {}
+  interface ColumnMeta<
+    in out TFeatures extends TableFeatures,
+    in out TData extends RowData,
+    TValue extends CellData = CellData
+  > extends NatTableColumnMeta<TData, TValue> {}
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */

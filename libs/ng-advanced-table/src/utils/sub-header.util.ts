@@ -1,6 +1,7 @@
-import type { Row, RowData, SortingFn, SortingState } from '@tanstack/angular-table';
+import type { RowData, SortingState } from '@tanstack/angular-table';
 
 import type { NatTableSubHeaderGroup } from '../common/sub-header.type';
+import type { Row, SortingFn } from '../common/table-features.type';
 
 /**
  * Prepends the forced ascending sub-header entry to the user sorting. Returns

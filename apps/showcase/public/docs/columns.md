@@ -118,15 +118,15 @@ Configure the table width model on the surface.
 
 ## Pinning And Reordering
 
-Pinning is enabled where the column allows it. Reordering is disabled by default. Set `[enableReordering]="true"` to enable drag/drop, keyboard moves, and companion move actions for every column, or leave it off and set `meta: { reorderable: true }` on only the columns that should move. Reordering stays inside the current pinning zone: left, center, or right.
+Pinning is enabled where the column allows it. Reordering is disabled by default. Set `[enableReordering]="true"` to enable drag/drop, keyboard moves, and companion move actions for every column, or leave it off and set `meta: { reorderable: true }` on only the columns that should move. Reordering stays inside the current pinning zone: start, center, or end. In a left-to-right table, start is the left edge and end is the right edge.
 
 With surface reordering enabled, every column is reorderable by default. Opt a column out with `meta: { reorderable: false }` to remove its drag, keyboard, and header-menu move affordances. The column is not itself grabbed, but another reorderable column can still move past it and displace it.
 
 ```ts
 readonly initialState: Partial<NatTableUserState> = {
   columnPinning: {
-    left: ['symbol'],
-    right: ['actions'],
+    start: ['symbol'],
+    end: ['actions'],
   },
   columnOrder: ['symbol', 'company', 'price', 'changePercent', 'actions'],
 };

@@ -1,4 +1,6 @@
-import type { Cell, Column, Row, RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Cell, Column, Row, Table } from './table-features.type';
 
 /**
  * Row handed to consumer templates. An alias owned by the library so template

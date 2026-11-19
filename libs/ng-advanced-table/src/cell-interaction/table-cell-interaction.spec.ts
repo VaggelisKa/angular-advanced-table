@@ -2,8 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
+import type { ColumnDef } from '../common/table-features.type';
 import { NatTable } from '../table/table';
 import { buildDynamicColumns, buildRows } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
@@ -28,8 +27,8 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it uses the explicit pin order when computing sticky left offsets', () => {
         host.state.set({
           columnPinning: {
-            left: ['region', 'name'],
-            right: []
+            start: ['region', 'name'],
+            end: []
           }
         });
         fixture.detectChanges();
@@ -39,10 +38,10 @@ describe('FEATURE: NatTable', () => {
         const regionCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="region"]');
         const nameCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child th[data-column-id="name"]');
 
-        expect(regionHeader.style.left).toBe('0px');
-        expect(nameHeader.style.left).toBe('140px');
-        expect(regionCell.style.left).toBe('0px');
-        expect(nameCell.style.left).toBe('140px');
+        expect(regionHeader.style.insetInlineStart).toBe('0px');
+        expect(nameHeader.style.insetInlineStart).toBe('140px');
+        expect(regionCell.style.insetInlineStart).toBe('0px');
+        expect(nameCell.style.insetInlineStart).toBe('140px');
       });
     });
 

@@ -1,4 +1,4 @@
-import type { Row, SortingState } from '@tanstack/angular-table';
+import type { SortingState } from '@tanstack/angular-table';
 
 import {
   buildSubHeaderRowGroups,
@@ -8,6 +8,7 @@ import {
   resolveSubHeaderValueText,
   stripNatTableSubHeaderSorting
 } from './sub-header.util';
+import type { Row } from '../common/table-features.type';
 
 type TestRowData = { readonly status: unknown };
 

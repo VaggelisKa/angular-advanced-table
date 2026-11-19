@@ -1,4 +1,6 @@
-import type { Column, ColumnDef, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Column, ColumnDef } from 'ng-advanced-table';
 
 const normalizeColumnLabel = (label: string | undefined): string | null => {
   const normalized = label?.trim() ?? '';

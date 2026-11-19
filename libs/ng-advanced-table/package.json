@@ -36,6 +36,9 @@
     "@tanstack/angular-table": "catalog:frontend",
     "tslib": "catalog:shared"
   },
+  "bin": {
+    "ng-advanced-table-migrate-v9": "./migrations/tanstack-v9.mjs"
+  },
   "sideEffects": [
     "./components/theme.css"
   ],

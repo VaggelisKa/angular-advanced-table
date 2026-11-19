@@ -62,7 +62,7 @@ export class ThemingShowcase {
         accessorKey: 'id',
         header: 'Order',
         meta: { label: 'Order', rowHeader: true },
-        cell: (context: CellContext<MockOrderRow, string>) => context.getValue().toUpperCase()
+        cell: (context: CellContext<MockOrderRow, unknown>) => context.getValue<string>().toUpperCase()
       },
       {
         accessorKey: 'customer',
@@ -81,7 +81,7 @@ export class ThemingShowcase {
         accessorKey: 'total',
         header: 'Total',
         meta: { label: 'Total', align: 'end' },
-        cell: (context: CellContext<MockOrderRow, number>) => currencyFormatter.format(context.getValue())
+        cell: (context: CellContext<MockOrderRow, unknown>) => currencyFormatter.format(context.getValue<number>())
       }
     ],
     {
