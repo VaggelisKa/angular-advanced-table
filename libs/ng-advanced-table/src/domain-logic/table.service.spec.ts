@@ -1,9 +1,10 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
+import type { Table } from '../common/table-features.type';
 import type { NatTableUiController } from '../common/ui-controller.type';
 import { NAT_TABLE_KEYBINDINGS } from '../hotkey-a11y/common/keybindings.const';
 

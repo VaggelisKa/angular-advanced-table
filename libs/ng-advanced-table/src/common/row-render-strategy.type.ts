@@ -1,6 +1,8 @@
 import type { Signal } from '@angular/core';
 
-import type { Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Row } from './table-features.type';
 
 /**
  * Engine-neutral body-row rendering contract.

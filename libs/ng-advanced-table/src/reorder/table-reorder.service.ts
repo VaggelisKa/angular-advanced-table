@@ -1,9 +1,10 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ApplicationRef, Injectable, Injector, afterNextRender, inject } from '@angular/core';
 
-import type { Column, HeaderGroup, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import type { ColumnReorderKeyboardDirection, ColumnReorderZone } from '../common/column-render.type';
+import type { Column, HeaderGroup } from '../common/table-features.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { readColumnEntry } from '../utils/column-def.util';

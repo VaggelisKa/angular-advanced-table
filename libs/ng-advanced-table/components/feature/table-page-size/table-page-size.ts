@@ -45,7 +45,7 @@ export class NatTablePageSize<TData extends RowData = RowData> {
 
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
+  protected readonly selectedPageSize = computed(() => this.table()?.atoms.pagination.get().pageSize ?? 0);
 
   private readonly resolvedAccessibilityLabels = computed(() =>
     mergePageSizeLabels(this.tableUiIntl().pageSize?.accessibilityLabels, this.accessibilityLabels())

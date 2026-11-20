@@ -1,5 +1,6 @@
-import type { Column, FlexRenderContent, HeaderContext, RowData } from '@tanstack/angular-table';
+import type { FlexRenderContent, RowData } from '@tanstack/angular-table';
 
+import type { Column, HeaderContext } from 'ng-advanced-table';
 import type { NatTableAccessibilityHeaderActionLabels } from 'ng-advanced-table/locale';
 
 /** Current sort direction for a header cell. */

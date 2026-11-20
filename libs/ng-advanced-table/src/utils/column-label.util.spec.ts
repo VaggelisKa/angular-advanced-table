@@ -1,5 +1,3 @@
-import type { Column, ColumnDef, Header, HeaderGroup } from '@tanstack/angular-table';
-
 import {
   getHeaderRowColumnIds,
   isPrimitiveHeaderContent,
@@ -7,6 +5,7 @@ import {
   resolveColumnLabel,
   shouldHidePrimitiveHeaderLabel
 } from './column-label.util';
+import type { Column, ColumnDef, Header, HeaderGroup } from '../common/table-features.type';
 
 type FixtureRow = { readonly id: string };
 

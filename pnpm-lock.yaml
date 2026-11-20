@@ -37,8 +37,8 @@ catalogs:
       specifier: 22.2.0
       version: 22.2.0
     '@tanstack/angular-table':
-      specifier: ^8.21.4
-      version: 8.21.4
+      specifier: ^9.3.2
+      version: 9.3.2
     prismjs:
       specifier: ^1.30.0
       version: 1.30.0
@@ -143,8 +143,8 @@ overrides:
   brace-expansion@5: ^5.0.12
   browserslist@4: ^4.28.7
   colord@2: ^2.9.4
-  fast-uri@3: ^3.1.9
   eslint-plugin-storybook@10: ^10.6.0
+  fast-uri@3: ^3.1.9
   follow-redirects@1: ^1.16.2
   form-data@4: ^4.0.6
   handlebars@4: ^4.7.10
@@ -274,7 +274,7 @@ importers:
         version: 22.2.0(ef0187f1c93769e42198f32d55ba8742)
       '@tanstack/angular-table':
         specifier: catalog:frontend
-        version: 8.21.4(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))
+        version: 9.3.2(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))
       ng-advanced-table:
         specifier: workspace:*
         version: link:../../libs/ng-advanced-table
@@ -308,7 +308,7 @@ importers:
         version: 22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2)
       '@tanstack/angular-table':
         specifier: catalog:frontend
-        version: 8.21.4(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))
+        version: 9.3.2(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))
       tslib:
         specifier: catalog:shared
         version: 2.8.1
@@ -2928,15 +2928,24 @@ packages:
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
 
-  '@tanstack/angular-table@8.21.4':
-    resolution: {integrity: sha512-djyuJFvIB/pBuBIqny8b7+5ozeXJSElaxYRZyyKLpYrXn4xQSysBT//X51eDT/mi3kS0spcjIHhoObjk3iCjcQ==}
-    engines: {node: '>=12'}
+  '@tanstack/angular-store@0.11.2':
+    resolution: {integrity: sha512-KdyoiKicx807HbcH98Ses9hRM7tHrn+sq6ZEZsA3FIGF20/bCnOqVxRVef+m14OGgck+9cUlEKgkAH/SKW3sVQ==}
     peerDependencies:
-      '@angular/core': '>=17'
+      '@angular/common': '>=19.0.0'
+      '@angular/core': '>=19.0.0'
 
-  '@tanstack/table-core@8.21.3':
-    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
-    engines: {node: '>=12'}
+  '@tanstack/angular-table@9.3.2':
+    resolution: {integrity: sha512-07g1t02m8JWVMq/RjyRduLyfV6tQKAz14gHdyVzeddFxHCsK3ltsghsTa3E6l8XOEORDjYESG3ZzTz/talxewg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@angular/core': '>=19'
+
+  '@tanstack/store@0.11.2':
+    resolution: {integrity: sha512-sJ4mjol8uQsHV0gOJzzjwXfh2Fwm+Sz0+8deqiTm4jGbMdjzNSW+xZCFm0kUa870uhd8yi+DpKnZb5Kc4apa0Q==}
+
+  '@tanstack/table-core@9.3.1':
+    resolution: {integrity: sha512-zQvlxSNi2qGM3L4jh85Z6hqMfdIR5qOfD9KHOU32nuKFJGN0RlJ7UvV1lsPb1fPVhpFYI0VP3jJGxLdLDpTKjQ==}
+    engines: {node: '>=20'}
 
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
@@ -5950,6 +5959,9 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -8762,13 +8774,26 @@ snapshots:
       estraverse: 5.3.0
       picomatch: 4.0.7
 
-  '@tanstack/angular-table@8.21.4(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))':
+  '@tanstack/angular-store@0.11.2(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))':
+    dependencies:
+      '@angular/common': 22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2)
+      '@angular/core': 22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2)
+      '@tanstack/store': 0.11.2
+
+  '@tanstack/angular-table@9.3.2(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))':
     dependencies:
       '@angular/core': 22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2)
-      '@tanstack/table-core': 8.21.3
-      tslib: 2.8.1
+      '@tanstack/angular-store': 0.11.2(@angular/common@22.2.1(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))(rxjs@7.8.2))(@angular/core@22.2.1(@angular/compiler@22.2.1)(rxjs@7.8.2)(zone.js@0.16.2))
+      '@tanstack/table-core': 9.3.1
+      tslib: 2.9.1
+    transitivePeerDependencies:
+      - '@angular/common'
 
-  '@tanstack/table-core@8.21.3': {}
+  '@tanstack/store@0.11.2': {}
+
+  '@tanstack/table-core@9.3.1':
+    dependencies:
+      '@tanstack/store': 0.11.2
 
   '@tybys/wasm-util@0.10.3':
     dependencies:
@@ -12138,6 +12163,8 @@ snapshots:
       strip-bom: 3.0.0
 
   tslib@2.8.1: {}
+
+  tslib@2.9.1: {}
 
   type-check@0.4.0:
     dependencies:

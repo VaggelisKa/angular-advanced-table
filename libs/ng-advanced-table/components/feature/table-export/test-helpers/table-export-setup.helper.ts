@@ -1,12 +1,11 @@
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
 import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableUserState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 
 import type { NatTableExportContext } from '../../../common/table-export.type';
 import { NatToolbarItem } from '../../../ui/toolbar-item/toolbar-item.directive';

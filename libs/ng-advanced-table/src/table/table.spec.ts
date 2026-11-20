@@ -5,13 +5,12 @@ import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import type { NatTableAccessibilityText } from 'ng-advanced-table/locale';
 
 import { NatTable } from './table';
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../cell-interaction/cell-interaction.const';
 import type { NatTableRowActivateEvent } from '../common/row.type';
+import type { ColumnDef } from '../common/table-features.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
@@ -411,7 +410,7 @@ describe('FEATURE: NatTable', () => {
         expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left')).not.toBeNull();
         expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right')).toBeNull();
 
-        host.state.set({ columnPinning: { left: [], right: ['name'] } });
+        host.state.set({ columnPinning: { start: [], end: ['name'] } });
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -952,7 +951,7 @@ describe('FEATURE: NatTable', () => {
         expect(providerFixture.debugElement.query(By.directive(NatTable)).componentInstance).toBe(tableComponent);
         expect(tableComponent.table).toBe(tableController);
         expect(tableService.controller()).toBe(surfaceController);
-        expect(tableController.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
+        expect(tableController.atoms.sorting.get()).toStrictEqual([{ id: 'name', desc: false }]);
         expect(queryRequired<HTMLTableElement>(providerFixture, 'table')).toBe(tableElement);
         expect(tableElement.id).toBe(tableElementId);
         expect(queryRequired<HTMLElement>(providerFixture, '.empty-state')).toBe(emptyState);
@@ -1270,7 +1269,7 @@ describe('FEATURE: NatTable', () => {
 
         const table = getInternalTable(fixture);
 
-        expect(table.table.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
+        expect(table.table.atoms.sorting.get()).toStrictEqual([{ id: 'name', desc: false }]);
 
         const sortedHeaders = queryAll<HTMLTableCellElement>(fixture, 'thead th[aria-sort]');
 
@@ -1304,7 +1303,7 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         // then:
-        expect(table.table.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
+        expect(table.table.atoms.sorting.get()).toStrictEqual([{ id: 'name', desc: false }]);
         expect(host.sortingEvents.at(-1)).toStrictEqual([{ id: 'name', desc: false }]);
 
         const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
@@ -1329,7 +1328,7 @@ describe('FEATURE: NatTable', () => {
 
         const table = getInternalTable(fixture);
 
-        expect(table.table.getState().sorting).toStrictEqual([
+        expect(table.table.atoms.sorting.get()).toStrictEqual([
           { id: 'name', desc: false },
           { id: 'region', desc: true }
         ]);
@@ -1442,7 +1441,7 @@ describe('FEATURE: NatTable', () => {
 
         expect(selected).toHaveLength(1);
         // Deterministic by sort order: svc-00001 wins even though svc-00002 was inserted first.
-        expect(getInternalTable(fixture).table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
+        expect(getInternalTable(fixture).table.atoms.rowSelection.get()).toStrictEqual({ 'svc-00001': true });
       });
     });
 
@@ -1456,7 +1455,7 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
 
         // The disabled flag must not wipe the controlled slice (continuity for runtime toggles).
-        expect(getInternalTable(fixture).table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
+        expect(getInternalTable(fixture).table.atoms.rowSelection.get()).toStrictEqual({ 'svc-00001': true });
       });
     });
 
@@ -1512,7 +1511,7 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         // then:
-        expect(table.table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
+        expect(table.table.atoms.rowSelection.get()).toStrictEqual({ 'svc-00001': true });
 
         // when:
         // Returning to the first page still shows the row selected.
@@ -1552,7 +1551,7 @@ describe('FEATURE: NatTable', () => {
         expect(visibleRows).toHaveLength(1);
         expect((visibleRows[0] as HTMLElement).textContent).toContain('Gamma');
         // Selection is keyed by row id, so it survives the filter.
-        expect(table.table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
+        expect(table.table.atoms.rowSelection.get()).toStrictEqual({ 'svc-00001': true });
 
         // when:
         // Clearing the filter brings Alpha back, still selected.

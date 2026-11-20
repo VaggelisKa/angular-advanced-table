@@ -96,8 +96,8 @@ describe('FEATURE: NatTable', () => {
           initialState: {
             ...host.initialState,
             columnPinning: {
-              left: ['name', 'region'],
-              right: ['status', 'throughput']
+              start: ['name', 'region'],
+              end: ['status', 'throughput']
             }
           }
         });
@@ -116,8 +116,8 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         expect(host.stateEvents.at(-1)?.columnPinning).toStrictEqual({
-          left: ['region', 'name'],
-          right: ['throughput', 'status']
+          start: ['region', 'name'],
+          end: ['throughput', 'status']
         });
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['region', 'name', 'throughput', 'status']);
       });
@@ -131,8 +131,8 @@ describe('FEATURE: NatTable', () => {
           initialState: {
             ...host.initialState,
             columnPinning: {
-              left: ['name'],
-              right: []
+              start: ['name'],
+              end: []
             }
           }
         });

@@ -52,19 +52,19 @@ export class Pinning {
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({
     columnPinning: {
-      left: ['name'],
-      right: ['value']
+      start: ['name'],
+      end: ['value']
     }
   });
 
   protected getPinnedSide(id: string): PinSide {
     const pinning = this.tableState().columnPinning;
 
-    if (pinning?.left?.includes(id)) {
+    if (pinning?.start.includes(id)) {
       return 'left';
     }
 
-    if (pinning?.right?.includes(id)) {
+    if (pinning?.end.includes(id)) {
       return 'right';
     }
 
@@ -73,9 +73,9 @@ export class Pinning {
 
   protected pinColumn(id: string, side: PinSide): void {
     this.tableState.update((current) => {
-      const pinning = current.columnPinning ?? { left: [], right: [] };
-      const left = (pinning.left ?? []).filter((entry) => entry !== id);
-      const right = (pinning.right ?? []).filter((entry) => entry !== id);
+      const pinning = current.columnPinning ?? { start: [], end: [] };
+      const left = pinning.start.filter((entry) => entry !== id);
+      const right = pinning.end.filter((entry) => entry !== id);
 
       if (side === 'left') {
         left.push(id);
@@ -85,7 +85,7 @@ export class Pinning {
 
       return {
         ...current,
-        columnPinning: { left, right }
+        columnPinning: { start: left, end: right }
       };
     });
   }

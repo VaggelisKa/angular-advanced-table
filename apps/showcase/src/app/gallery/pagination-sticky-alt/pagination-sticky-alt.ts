@@ -26,8 +26,8 @@ export class PaginationStickyAlt {
       pageSize: 5
     },
     columnPinning: {
-      left: ['id'],
-      right: ['actions']
+      start: ['id'],
+      end: ['actions']
     }
   });
 }

@@ -292,7 +292,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
 
         await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         await expect.poll(async () => Math.abs((await boxOf(categoryCell)).x - categoryXBefore)).toBeLessThanOrEqual(1);
-        await expect.poll(async () => categoryCell.evaluate((cell) => cell.style.left)).not.toBe('');
+        await expect.poll(async () => categoryCell.evaluate((cell) => cell.style.insetInlineStart)).not.toBe('');
       });
     });
 

@@ -2,10 +2,9 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import { NatTableStatic } from './static-table';
 import type { NatTableRowActivateEvent } from '../common/row.type';
+import type { ColumnDef } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import type { NatTableDataStatus } from '../common/table-status.type';
 import { buildRows, getRowIdValue } from '../test-helpers/table-data.helper';

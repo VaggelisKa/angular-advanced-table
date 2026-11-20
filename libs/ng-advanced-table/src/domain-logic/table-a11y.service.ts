@@ -13,11 +13,12 @@ import {
   untracked
 } from '@angular/core';
 
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
 import type { NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import type { Column } from '../common/table-features.type';
 import { validateKeybindings } from '../hotkey-a11y/utils/keybindings.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { serializeRowSelection } from '../utils/row-state.util';
@@ -285,7 +286,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   private registerResizeAnnouncementEffect(): void {
     effect(() => {
-      const resizingColumnId = this.state.table.getState().columnSizingInfo.isResizingColumn || null;
+      const resizingColumnId = this.state.table.atoms.columnResizing.get().isResizingColumn || null;
 
       untracked(() => this.handleResizeEnd(resizingColumnId));
     });

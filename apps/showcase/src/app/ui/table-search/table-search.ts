@@ -40,7 +40,7 @@ export class TableSearch<TData extends RowData = RowData> {
   protected readonly resolvedPlaceholder = computed(() => this.placeholder() ?? this.tableUiIntl().search?.placeholder ?? '');
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly value = computed<string>(() => String(this.table()?.getState().globalFilter ?? ''));
+  protected readonly value = computed<string>(() => String(this.table()?.atoms.globalFilter.get() ?? ''));
 
   public constructor() {
     this.natTableService.registerSearch();

@@ -1,7 +1,8 @@
 import { hasNatTableStateValueChanged } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
 
-const serializeSelectedRowIds = (selection: NatTableUserState['rowSelection']): string =>
+// Loose: consumer state may still carry v8-style `false` entries.
+const serializeSelectedRowIds = (selection: Readonly<Record<string, boolean>>): string =>
   Object.keys(selection)
     .filter((rowId) => selection[rowId])
     .sort()
