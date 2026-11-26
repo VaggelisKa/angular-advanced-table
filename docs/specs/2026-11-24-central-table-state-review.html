@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Central Table State</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap" />
+    <style>
+      /* Layout: single reading column; each change is a heading, a short note, then a before/after diff pair that stacks on phones. */
+      :root {
+        --bg: #f7f8fa;
+        --surface: #ffffff;
+        --fg: #1b1f27;
+        --muted: #5b6474;
+        --line: #dde1e8;
+        --accent: #3b5bdb;
+        --before: #b42318;
+        --before-bg: #fdf1f0;
+        --after: #12795a;
+        --after-bg: #edf8f3;
+        --same: #6a5acd;
+        --same-bg: #f2f0fc;
+        --code-bg: #f1f3f7;
+        --font-display: 'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
+        --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --bg: #12151b;
+          --surface: #191d25;
+          --fg: #e6e9ef;
+          --muted: #9aa3b2;
+          --line: #2b313c;
+          --accent: #8ea6ff;
+          --before: #ff8a80;
+          --before-bg: #2a1918;
+          --after: #6fd3a8;
+          --after-bg: #14261f;
+          --same: #b3a8ff;
+          --same-bg: #1f1c33;
+          --code-bg: #141820;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme='dark'] {
+        --bg: #12151b;
+        --surface: #191d25;
+        --fg: #e6e9ef;
+        --muted: #9aa3b2;
+        --line: #2b313c;
+        --accent: #8ea6ff;
+        --before: #ff8a80;
+        --before-bg: #2a1918;
+        --after: #6fd3a8;
+        --after-bg: #14261f;
+        --same: #b3a8ff;
+        --same-bg: #1f1c33;
+        --code-bg: #141820;
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font-body);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .page {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding-block: 40px 72px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        text-wrap: balance;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
+      h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+      p {
+        margin: 0;
+        max-width: 68ch;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.88em;
+        background: var(--code-bg);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      a {
+        color: var(--accent);
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .lede {
+        font-size: 1.05rem;
+        color: var(--muted);
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--muted);
+      }
+      .chip.breaking {
+        color: var(--before);
+        border-color: currentColor;
+      }
+
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .section-head {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        border-top: 1px solid var(--line);
+        padding-top: 22px;
+      }
+
+      .change {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .change-title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .tag {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+      }
+      .tag.breaking {
+        color: var(--before);
+        background: var(--before-bg);
+      }
+      .tag.fixed {
+        color: var(--after);
+        background: var(--after-bg);
+      }
+      .tag.unchanged {
+        color: var(--same);
+        background: var(--same-bg);
+      }
+      .tag.new {
+        color: var(--accent);
+        background: var(--code-bg);
+      }
+
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .pair.single {
+        grid-template-columns: 1fr;
+      }
+      @media (max-width: 760px) {
+        .pair {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .pane {
+        min-width: 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pane-label {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        padding: 7px 12px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .pane.before .pane-label {
+        color: var(--before);
+        background: var(--before-bg);
+      }
+      .pane.after .pane-label {
+        color: var(--after);
+        background: var(--after-bg);
+      }
+      .pane.same .pane-label {
+        color: var(--same);
+        background: var(--same-bg);
+      }
+      .pane-label span:last-child {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      pre {
+        margin: 0;
+        padding: 12px 14px;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        line-height: 1.6;
+        color: var(--fg);
+        tab-size: 2;
+        flex: 1;
+      }
+      .rm {
+        background: var(--before-bg);
+        color: var(--before);
+        display: inline-block;
+        min-width: 100%;
+      }
+      .ad {
+        background: var(--after-bg);
+        color: var(--after);
+        display: inline-block;
+        min-width: 100%;
+      }
+      .cm {
+        color: var(--muted);
+      }
+      .note {
+        font-size: 13.5px;
+        color: var(--muted);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 620px;
+        font-size: 13.5px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      td code {
+        white-space: nowrap;
+      }
+
+      .flows {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 760px) {
+        .flows {
+          grid-template-columns: 1fr;
+        }
+      }
+      .flow {
+        min-width: 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .flow pre.mermaid {
+        padding: 0;
+        background: transparent;
+        text-align: center;
+      }
+      .flow ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 13.5px;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="eyebrow">ng-advanced-table · branch central-table-state</div>
+        <h1>Central table state: API before and after</h1>
+        <p class="lede">
+          The surface is the initiator and <code>NatTableService</code> is the single state manager. Renderers no longer keep their own
+          copy of the state. This page shows what that means for code that uses the library.
+        </p>
+        <div class="meta">
+          <span class="chip">base: tanstack-table-v9-migration</span>
+          <span class="chip breaking">minor · Breaking</span>
+          <span class="chip">uncommitted</span>
+        </div>
+      </header>
+
+      <section>
+        <div class="section-head">
+          <h2>Who is affected</h2>
+          <p>
+            Most apps only use <code>&lt;nat-table-surface&gt;</code> and companion controls. That code does not change. The breaking
+            part only reaches code that injects <code>NatTableService</code> and configures or reads it directly, usually a host that
+            provides the service without a surface.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Surface usage</h3>
+            <span class="tag unchanged">Unchanged</span>
+          </div>
+          <div class="pair single">
+            <div class="pane same">
+              <div class="pane-label"><span>before = after</span><span>orders-page.html</span></div>
+              <pre>
+&lt;nat-table-surface
+  [initialState]="&#123; pagination: &#123; pageIndex: 0, pageSize: 25 &#125; &#125;"
+  [enableSorting]="true"
+  [(state)]="tableState"
+  (sortingChange)="reload($event)"&gt;
+  &lt;nat-table-pagination [pageSizeOptions]="[25, 50, 100]" /&gt;
+  &lt;nat-table [data]="rows()" [columns]="columns" accessibleName="Orders" /&gt;
+&lt;/nat-table-surface&gt;</pre
+              >
+            </div>
+          </div>
+          <p class="note">
+            Inputs, slice outputs and the <code>[(state)]</code> two-way binding behave exactly as before. Internally the surface now
+            hands all inputs to the service in a single <code>configure()</code> call.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Consumer-owned search control</h3>
+            <span class="tag unchanged">Unchanged</span>
+          </div>
+          <div class="pair single">
+            <div class="pane same">
+              <div class="pane-label"><span>before = after</span><span>table-search.ts</span></div>
+              <pre>
+private readonly tableService = inject(NatTableService);
+protected readonly controller = computed(() =&gt; this.tableService.controller());
+
+constructor() &#123;
+  this.tableService.registerSearch();
+  inject(DestroyRef).onDestroy(() =&gt; this.tableService.unregisterSearch());
+&#125;
+
+protected onInput(value: string): void &#123;
+  this.controller()?.patchState(&#123; globalFilter: value, pagination: firstPage &#125;);
+&#125;</pre
+              >
+            </div>
+          </div>
+          <p class="note">
+            The controller contract (<code>NatTableUiController.patchState</code>), <code>controller()</code>, and the
+            <code>register*</code> methods are untouched, so companion controls and custom controls keep working.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Host-provided service, without a surface</h2>
+          <p>
+            These are the changes reviewers should look at. Each example is a host component with
+            <code>providers: [NatTableService]</code>.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Configure surface settings</h3>
+            <span class="tag breaking">Breaking</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span><span>detached-positions.ts</span></div>
+              <pre>private readonly service = inject(NatTableService);
+
+constructor() &#123;
+<span class="rm">  // config was written through patchState()…</span>
+<span class="rm">  this.service.patchState(&#123; enableSorting: true &#125;);</span>
+<span class="rm">  // …or by setting the signals directly</span>
+<span class="rm">  this.service.stickyHeader.set(false);</span>
+<span class="rm">  this.service.locale.set('da');</span>
+&#125;</pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span><span>detached-positions.ts</span></div>
+              <pre>private readonly service = inject(NatTableService);
+
+constructor() &#123;
+<span class="ad">  // one write path; the signals are read-only</span>
+<span class="ad">  this.service.configure(&#123;</span>
+<span class="ad">    enableSorting: true,</span>
+<span class="ad">    stickyHeader: false,</span>
+<span class="ad">    locale: 'da'</span>
+<span class="ad">  &#125;);</span>
+&#125;</pre>
+            </div>
+          </div>
+          <p class="note">
+            <code>patchState</code> on the service meant "configuration" while <code>patchState</code> on a controller meant "view
+            state". The service method is now <code>configure()</code>, so the name no longer clashes. Keys you leave out keep their
+            value, as before.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Seed the initial state</h3>
+            <span class="tag breaking">Breaking</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span></div>
+              <pre><span class="rm">this.service.surfaceInitialState.set(&#123;</span>
+<span class="rm">  sorting: [&#123; id: 'symbol', desc: false &#125;]</span>
+<span class="rm">&#125;);</span>
+<span class="rm">this.service.surfaceMode.set('manual');</span></pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span></div>
+              <pre><span class="ad">this.service.configure(&#123;</span>
+<span class="ad">  initialState: &#123; sorting: [&#123; id: 'symbol', desc: false &#125;] &#125;,</span>
+<span class="ad">  mode: 'manual'</span>
+<span class="ad">&#125;);</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Read the current state</h3>
+            <span class="tag breaking">Breaking</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span></div>
+              <pre><span class="cm">// service.state() held only the controlled slices,</span>
+<span class="cm">// usually &#123;&#125; for a host without a binding</span>
+<span class="rm">const bound = this.service.state();          // Partial&lt;…&gt;</span>
+
+<span class="cm">// the real values lived inside the renderer</span>
+<span class="rm">const sorting = this.service.controller()</span>
+<span class="rm">  ?.table.atoms.sorting.get() ?? [];</span></pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span></div>
+              <pre><span class="cm">// the resolved state for every slice</span>
+<span class="ad">const sorting = this.service.state().sorting; // NatTableUserState</span>
+
+<span class="cm">// only the [(state)] slices, if you need them</span>
+<span class="ad">const bound = this.service.controlledState();</span></pre>
+            </div>
+          </div>
+          <p class="note">
+            <code>state</code> now returns the controlled slices layered over the state the service owns, so it is complete even when
+            no renderer is mounted yet. <code>globalFilter</code> keeps the consumer's value whether or not a search control is
+            registered, matching what the surface emits.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Follow state changes</h3>
+            <span class="tag breaking">Breaking</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span></div>
+              <pre>effect(() =&gt; &#123;
+<span class="rm">  const next = this.service.stateChangeEvent();</span>
+  if (next) this.persist(next);
+&#125;);</pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span></div>
+              <pre>effect(() =&gt; &#123;
+<span class="ad">  const next = this.service.stateChanges();</span>
+  if (next) this.persist(next);
+&#125;);</pre>
+            </div>
+          </div>
+          <p class="note">
+            Same payload: the full committed state, including proposed values for controlled slices. Only the name changed.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Write view state</h3>
+            <span class="tag breaking">Breaking</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span></div>
+              <pre><span class="cm">// wrote the *controlled* partial: every slice you</span>
+<span class="cm">// touched became controlled from then on</span>
+<span class="rm">this.service.setState(&#123; globalFilter: 'acme' &#125;);</span>
+<span class="rm">this.service.updateState((s) =&gt; (&#123; ...s, pagination &#125;));</span>
+
+<span class="cm">// meant for renderers, but public</span>
+<span class="rm">this.service.notifyStateChange(fullState);</span></pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span></div>
+              <pre><span class="cm">// a user action: goes through the renderer, which</span>
+<span class="cm">// normalizes it and commits it to the service</span>
+<span class="ad">this.service.controller()?.patchState(&#123; globalFilter: 'acme' &#125;);</span>
+
+<span class="cm">// taking control of a slice, like [(state)] does</span>
+<span class="ad">this.service.configure(&#123; state: &#123; globalFilter: 'acme' &#125; &#125;);</span></pre>
+            </div>
+          </div>
+          <p class="note">
+            <code>setState</code>, <code>updateState</code> and <code>notifyStateChange</code> are removed. The new
+            <code>seedState()</code> and <code>commitState()</code> are the renderer side of the service; apps should not need to call
+            them.
+          </p>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Swap renderers</h3>
+            <span class="tag fixed">Behaviour fix</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span><span>user sorted by status, then swapped</span></div>
+              <pre>&#64;Component(&#123;
+  providers: [NatTableService],
+  template: `
+    &#64;if (wide()) &#123;
+      &lt;nat-table [data]="rows" [columns]="columns" /&gt;
+    &#125; &#64;else &#123;
+      &lt;nat-list [data]="rows" [columns]="columns" /&gt;
+    &#125;`
+&#125;)
+
+<span class="rm">// the list mounts with its own empty state and re-seeds</span>
+<span class="rm">// from initialState: sorting jumps back to name ↑,</span>
+<span class="rm">// page index, filters and selection reset too</span></pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span><span>same template</span></div>
+              <pre>&#64;Component(&#123;
+  providers: [NatTableService],
+  template: `
+    &#64;if (wide()) &#123;
+      &lt;nat-table [data]="rows" [columns]="columns" /&gt;
+    &#125; &#64;else &#123;
+      &lt;nat-list [data]="rows" [columns]="columns" /&gt;
+    &#125;`
+&#125;)
+
+<span class="ad">// the service is seeded once; the list reads the same</span>
+<span class="ad">// state, so it stays sorted by status ↓</span></pre>
+            </div>
+          </div>
+          <p class="note">
+            Under <code>&lt;nat-table-surface&gt;</code> a swap already kept state, because the surface wrote every change back into
+            its own <code>state</code> model. Locked by the new <code>src/table/table-renderer-swap.spec.ts</code>.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Inside the library</h2>
+          <p>The same change, seen from the renderer engine (<code>NatTableState</code>). This is the bulk of the diff.</p>
+        </div>
+
+        <div class="flows">
+          <div class="flow">
+            <div class="pane-label" style="border: 0; padding: 0; background: transparent; color: var(--before)">
+              <span>before</span>
+            </div>
+            <pre class="mermaid">
+flowchart TB
+  S[NatTableSurface] -- "patchState(config)" --> SVC[NatTableService<br/>17 writable signals<br/>controlled state]
+  SVC --> T[nat-table<br/>NatTableState<br/>9 internal* signals]
+  SVC --> L[nat-list<br/>NatTableState<br/>9 internal* signals]
+  T -- notifyStateChange --> SVC
+  L -- notifyStateChange --> SVC
+  SVC -- stateChangeEvent --> S
+</pre>
+            <ul>
+              <li>Each renderer owned its own copy of uncontrolled state and seeded it on mount.</li>
+              <li>Anything could <code>.set()</code> config signals on the service.</li>
+            </ul>
+          </div>
+          <div class="flow">
+            <div class="pane-label" style="border: 0; padding: 0; background: transparent; color: var(--after)">
+              <span>after</span>
+            </div>
+            <pre class="mermaid">
+flowchart TB
+  S[NatTableSurface<br/>initiator] -- "configure(inputs)" --> SVC[NatTableService<br/>one config signal<br/>one owned state]
+  SVC -- "state, config (read-only)" --> T[nat-table<br/>NatTableState]
+  SVC -- "state, config (read-only)" --> L[nat-list<br/>NatTableState]
+  T -- commitState --> SVC
+  L -- commitState --> SVC
+  SVC -- stateChanges --> S
+</pre>
+            <ul>
+              <li>One copy of state; renderers only add read-time gating and normalization.</li>
+              <li>One write path in (<code>configure</code>), one out (<code>stateChanges</code>).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="change">
+          <div class="change-title">
+            <h3>Merged state in the renderer engine</h3>
+            <span class="tag new">Internal</span>
+          </div>
+          <div class="pair">
+            <div class="pane before">
+              <div class="pane-label"><span>before</span><span>table.state.ts</span></div>
+              <pre><span class="rm">private readonly internalSorting = signal(DEFAULT.sorting);</span>
+<span class="rm">private readonly internalGlobalFilter = signal('');</span>
+<span class="rm">// …7 more internal* signals</span>
+
+mergedState = computed(() =&gt; (&#123;
+<span class="rm">  sorting: normalize(this.state().sorting ?? this.internalSorting()),</span>
+<span class="rm">  columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),</span>
+<span class="rm">  pagination: this.state().pagination ?? this.internalPagination(),</span>
+  // …
+&#125;));
+
+updateState(updaters) &#123;
+  const next = resolve(this.mergedState(), updaters);
+<span class="rm">  this.commitInternalState(next); // 9 if-blocks</span>
+  this.flushTableOptions();
+<span class="rm">  this.natTableService.notifyStateChange(next);</span>
+&#125;</pre>
+            </div>
+            <div class="pane after">
+              <div class="pane-label"><span>after</span><span>table.state.ts</span></div>
+              <pre><span class="ad">private readonly userState = this.natTableService.state;</span>
+
+
+
+mergedState = computed(() =&gt; &#123;
+<span class="ad">  const state = this.userState();</span>
+<span class="ad">  return &#123;</span>
+<span class="ad">    sorting: normalize(state.sorting),</span>
+<span class="ad">    columnFilters: state.columnFilters,</span>
+<span class="ad">    pagination: state.pagination,</span>
+    // …
+  &#125;;
+&#125;);
+
+updateState(updaters) &#123;
+  const next = resolve(this.mergedState(), updaters);
+<span class="ad">  this.natTableService.commitState(next);</span>
+  this.flushTableOptions();
+&#125;</pre>
+            </div>
+          </div>
+          <p class="note">
+            The 20 <code>computed(() =&gt; this.natTableService.x())</code> wrappers are also gone; the engine references the service
+            signals directly. Pinning, order and sizing keep their equality guards, so TanStack row memoization is unaffected.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>NatTableService member map</h2>
+          <p>
+            Every public member that changed. Members not listed (<code>controller</code>, <code>setController</code>,
+            <code>clearController</code>, <code>register*</code>, <code>has*</code>, <code>manual*</code>, <code>keybindings</code>,
+            <code>keyboard</code>) are unchanged.
+          </p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Before</th>
+                <th>After</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>patchState(config)</code></td>
+                <td><code>configure(config)</code></td>
+                <td>Same "omitted keys keep their value" rule</td>
+              </tr>
+              <tr>
+                <td><code>enableSorting.set(…)</code> and the other config signals</td>
+                <td><code>configure(&#123; enableSorting &#125;)</code></td>
+                <td>Signals are now read-only</td>
+              </tr>
+              <tr>
+                <td><code>state()</code> (controlled partial)</td>
+                <td><code>controlledState()</code></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>none</td>
+                <td><code>state()</code> (resolved full state)</td>
+                <td>New meaning for the old name</td>
+              </tr>
+              <tr>
+                <td><code>surfaceInitialState</code></td>
+                <td><code>initialState</code></td>
+                <td>Read-only</td>
+              </tr>
+              <tr>
+                <td><code>surfaceMode</code></td>
+                <td><code>mode</code></td>
+                <td>Read-only</td>
+              </tr>
+              <tr>
+                <td><code>stateChangeEvent</code></td>
+                <td><code>stateChanges</code></td>
+                <td>Same payload</td>
+              </tr>
+              <tr>
+                <td><code>setState</code>, <code>updateState</code></td>
+                <td>removed</td>
+                <td>Use the controller's <code>patchState</code> or <code>configure(&#123; state &#125;)</code></td>
+              </tr>
+              <tr>
+                <td><code>notifyStateChange</code></td>
+                <td><code>commitState</code></td>
+                <td>Renderer side; also stores uncontrolled slices</td>
+              </tr>
+              <tr>
+                <td>none</td>
+                <td><code>seedState()</code>, <code>hasSeededState</code></td>
+                <td>Seeds once per service</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+      const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+      mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default' });
+    </script>
+  </body>
+</html>
