@@ -3,18 +3,7 @@ import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
 import { Injectable, computed, effect, inject, isDevMode, linkedSignal, signal, untracked } from '@angular/core';
 
-import type {
-  ColumnFiltersState,
-  ColumnOrderState,
-  ColumnPinningState,
-  ColumnSizingState,
-  PaginationState,
-  RowData,
-  RowSelectionState,
-  SortingState,
-  TableOptions,
-  Updater
-} from '@tanstack/angular-table';
+import type { ColumnSizingState, RowData, SortingState, TableOptions, Updater } from '@tanstack/angular-table';
 import { injectTable } from '@tanstack/angular-table';
 
 import {
@@ -46,7 +35,6 @@ import type { NatTableBodyRenderPlan } from '../common/row-render-strategy.type'
 import type { NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { Cell, Column, ColumnDef, FilterFn, NatTableFeatures, Row, Table, VisibilityState } from '../common/table-features.type';
-import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableBodyState, NatTableDataStatus } from '../common/table-status.type';
@@ -85,7 +73,7 @@ import { genericGlobalFilter } from '../utils/global-filter.util';
 import { isColumnReorderable, isColumnResizable } from '../utils/interaction.util';
 import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
 import { normalizeSortingState } from '../utils/sorting.util';
-import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
+import { firstPageUpdater, resolveUpdater } from '../utils/state-seed.util';
 import {
   buildSubHeaderRowGroups,
   buildSubHeaderRowOffsets,
@@ -100,12 +88,12 @@ import {
 let nextTableId = 0;
 
 /**
- * Per-table state store that owns TanStack table creation, all internal state
- * signals, column width resolution, resize/reorder state logic, and derived
- * computeds.
+ * Per-renderer engine: owns the TanStack table instance, renderer inputs,
+ * column width resolution, resize/reorder logic, and derived render computeds.
  *
- * The `NatTable` component and its companion directives consume this store's
- * signals for rendering and delegate user actions to its methods.
+ * It holds no view state of its own. It reads the central state and surface
+ * configuration from `NatTableService` and commits every change back to it,
+ * so all renderers under one surface share a single state.
  */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table-instance state, provided by NatTable (providers: [NatTableState]), not root.
 @Injectable()
@@ -177,43 +165,36 @@ export class NatTableState<TData extends RowData = RowData> {
   /** Renderer-level sub-header gate: false ignores the sub-header config entirely. */
   public readonly enableSubHeaders = signal(true);
 
-  // ─── Service-derived computeds ───
+  // ─── Surface configuration (owned by NatTableService) ───
 
-  public readonly initialState = computed(() => this.natTableService.surfaceInitialState());
-  public readonly state = computed(() => this.natTableService.state());
-  public readonly enablePagination = computed(() => this.natTableService.hasPagination());
-  public readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
-  public readonly manualPagination = computed(() => this.natTableService.manualPagination());
-  public readonly manualSorting = computed(() => this.natTableService.manualSorting());
-  public readonly manualFiltering = computed(() => this.natTableService.manualFiltering());
-  public readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
-  public readonly enableAnnouncements = computed(() => this.natTableService.enableAnnouncements());
-  public readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
-  public readonly enableMultiSort = computed(() => this.natTableService.enableMultiSort());
-  public readonly locale = computed(() => this.natTableService.locale());
-  public readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
-  public readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
-  public readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
-  public readonly resizingEnabled = computed(() => this.natTableService.enableColumnResizing());
-  public readonly enableReordering = computed(() => this.natTableService.enableReordering());
-  public readonly enableSorting = computed(() => this.natTableService.enableSorting());
-  public readonly enablePinning = computed(() => this.natTableService.enablePinning());
+  public readonly initialState = this.natTableService.initialState;
+  public readonly enablePagination = this.natTableService.hasPagination;
+  public readonly enableGlobalFilter = this.natTableService.hasSearch;
+  public readonly manualPagination = this.natTableService.manualPagination;
+  public readonly manualSorting = this.natTableService.manualSorting;
+  public readonly manualFiltering = this.natTableService.manualFiltering;
+  public readonly manualPageCount = this.natTableService.manualPageCount;
+  public readonly enableAnnouncements = this.natTableService.enableAnnouncements;
+  public readonly stickyHeader = this.natTableService.stickyHeader;
+  public readonly enableMultiSort = this.natTableService.enableMultiSort;
+  public readonly locale = this.natTableService.locale;
+  public readonly accessibilityText = this.natTableService.accessibilityText;
+  public readonly columnResizeMode = this.natTableService.columnResizeMode;
+  public readonly columnSizingMode = this.natTableService.columnSizingMode;
+  public readonly resizingEnabled = this.natTableService.enableColumnResizing;
+  public readonly enableReordering = this.natTableService.enableReordering;
+  public readonly enableSorting = this.natTableService.enableSorting;
+  public readonly enablePinning = this.natTableService.enablePinning;
+  public readonly direction = this.natTableService.direction;
   public readonly isFixedLayout = computed(() => this.columnSizingMode() === 'fixed');
-  public readonly direction = computed(() => this.natTableService.direction());
 
-  // ─── Internal state signals ───
+  // ─── View state (owned by NatTableService) ───
 
-  private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
-  private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
-  private readonly internalColumnFilters = signal<ColumnFiltersState>(DEFAULT_TABLE_STATE.columnFilters);
-  private readonly internalColumnVisibility = signal<VisibilityState>(DEFAULT_TABLE_STATE.columnVisibility);
-  private readonly internalColumnOrder = signal<ColumnOrderState>(DEFAULT_TABLE_STATE.columnOrder);
-  private readonly internalColumnPinning = signal<ColumnPinningState>(DEFAULT_TABLE_STATE.columnPinning);
-  private readonly internalColumnSizing = signal<ColumnSizingState>(DEFAULT_TABLE_STATE.columnSizing);
+  /** Central view state: controlled slices over the service-owned ones, before renderer gating. */
+  private readonly userState = this.natTableService.state;
+  public readonly hasSeededInitialState = this.natTableService.hasSeededState;
+  /** Transient width seed for the column a pointer resize is about to drag. */
   public readonly resizeSeedSizing = signal<ColumnSizingState>({});
-  private readonly internalRowSelection = signal<RowSelectionState>(DEFAULT_TABLE_STATE.rowSelection);
-  private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
-  public readonly hasSeededInitialState = signal(false);
 
   // ─── Stable DOM id ───
 
@@ -276,17 +257,13 @@ export class NatTableState<TData extends RowData = RowData> {
   // on every `state()` write (a sort, a selection toggle), and TanStack memoizes
   // each row's cells on these arrays by reference, so a fresh-but-equal array
   // makes every rendered row rebuild every cell and re-render its content.
-  private readonly resolvedColumnOrder = computed(
-    () => retainColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds()),
-    { equal: hasSameStringOrder }
-  );
+  private readonly resolvedColumnOrder = computed(() => retainColumnOrder(this.userState().columnOrder, this.allLeafColumnIds()), {
+    equal: hasSameStringOrder
+  });
 
-  private readonly resolvedColumnPinning = computed(
-    () => retainColumnPinning(this.state().columnPinning ?? this.internalColumnPinning()),
-    {
-      equal: hasSameColumnPinning
-    }
-  );
+  private readonly resolvedColumnPinning = computed(() => retainColumnPinning(this.userState().columnPinning), {
+    equal: hasSameColumnPinning
+  });
 
   private readonly tanstackColumnOrder = computed(() => normalizeColumnOrder(this.resolvedColumnOrder(), this.allLeafColumnIds()), {
     equal: hasSameStringOrder
@@ -298,7 +275,7 @@ export class NatTableState<TData extends RowData = RowData> {
   );
 
   private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
-    const resolved = this.state().columnSizing ?? this.internalColumnSizing();
+    const resolved = this.userState().columnSizing;
     const seed = this.resizeSeedSizing();
 
     let merged: ColumnSizingState | null = null;
@@ -320,19 +297,23 @@ export class NatTableState<TData extends RowData = RowData> {
    * state carries this value so a two-way `[(state)]` binding never has its
    * controlled `globalFilter` overwritten.
    */
-  private readonly userGlobalFilter = computed(() => this.state().globalFilter ?? this.internalGlobalFilter());
+  private readonly userGlobalFilter = computed(() => this.userState().globalFilter);
 
-  public readonly mergedState = computed<NatTableUserState>(() => ({
-    sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting(), this.enableMultiSort()),
-    globalFilter: this.enableGlobalFilter() ? this.userGlobalFilter() : '',
-    columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
-    columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
-    columnOrder: this.resolvedColumnOrder(),
-    columnPinning: this.resolvedColumnPinning(),
-    columnSizing: this.resolvedColumnSizing(),
-    rowSelection: normalizeRowSelection(this.state().rowSelection ?? this.internalRowSelection(), this.selectionMode() === 'multiple'),
-    pagination: this.state().pagination ?? this.internalPagination()
-  }));
+  public readonly mergedState = computed<NatTableUserState>(() => {
+    const state = this.userState();
+
+    return {
+      sorting: normalizeSortingState(state.sorting, this.enableMultiSort()),
+      globalFilter: this.enableGlobalFilter() ? this.userGlobalFilter() : '',
+      columnFilters: state.columnFilters,
+      columnVisibility: state.columnVisibility,
+      columnOrder: this.resolvedColumnOrder(),
+      columnPinning: this.resolvedColumnPinning(),
+      columnSizing: this.resolvedColumnSizing(),
+      rowSelection: normalizeRowSelection(state.rowSelection, this.selectionMode() === 'multiple'),
+      pagination: state.pagination
+    };
+  });
 
   /**
    * Sorting handed to TanStack: the forced sub-header entry prepended to the
@@ -1054,22 +1035,20 @@ export class NatTableState<TData extends RowData = RowData> {
 
   // ─── State management ───
 
-  public seedInitialState(initialState: Partial<NatTableUserState>): void {
-    const seed = resolveSeedState(initialState, DEFAULT_TABLE_STATE);
+  /**
+   * Seeds the surface state on the first renderer to mount and reports the
+   * seeded state once. A renderer mounting later (a table/list swap) finds the
+   * service already seeded and keeps the current state.
+   */
+  public seedInitialState(): void {
+    if (this.natTableService.seedState()) {
+      this.natTableService.commitState(this.getReportedState());
+    }
+  }
 
-    this.internalSorting.set(normalizeSortingState(seed.sorting, this.enableMultiSort()));
-    // Kept ungated: `mergedState` applies the search gate, reported state keeps the value.
-    this.internalGlobalFilter.set(seed.globalFilter);
-    this.internalColumnFilters.set(seed.columnFilters);
-    this.internalColumnVisibility.set(seed.columnVisibility);
-    this.internalColumnOrder.set(seed.columnOrder);
-    this.internalColumnPinning.set(seed.columnPinning);
-    this.internalColumnSizing.set(seed.columnSizing);
-    this.internalRowSelection.set(normalizeRowSelection(seed.rowSelection, this.selectionMode() === 'multiple'));
-    this.internalPagination.set(seed.pagination);
-    this.hasSeededInitialState.set(true);
-
-    this.natTableService.notifyStateChange({ ...this.mergedState(), globalFilter: this.userGlobalFilter() });
+  /** `mergedState` with the consumer's ungated global filter, as reported to the surface. */
+  private getReportedState(): NatTableUserState {
+    return { ...this.mergedState(), globalFilter: this.userGlobalFilter() };
   }
 
   public patchState(
@@ -1113,52 +1092,11 @@ export class NatTableState<TData extends RowData = RowData> {
       pagination: resolveUpdater(currentState.pagination, updaters.pagination)
     };
 
-    this.commitInternalState(nextState);
+    this.natTableService.commitState(nextState);
     // v9 forwards option changes from an effect; without this the next read of
     // `table.atoms.<slice>` (a companion control, a TanStack handler) still sees
     // the old state, and controls that correct it write again and can loop.
     this.flushTableOptions();
-    this.natTableService.notifyStateChange(nextState);
-  }
-
-  private commitInternalState(nextState: NatTableUserState): void {
-    const controlled = this.state();
-
-    if (controlled.sorting === undefined) {
-      this.internalSorting.set(nextState.sorting);
-    }
-
-    if (controlled.globalFilter === undefined) {
-      this.internalGlobalFilter.set(nextState.globalFilter);
-    }
-
-    if (controlled.columnFilters === undefined) {
-      this.internalColumnFilters.set(nextState.columnFilters);
-    }
-
-    if (controlled.columnVisibility === undefined) {
-      this.internalColumnVisibility.set(nextState.columnVisibility);
-    }
-
-    if (controlled.columnOrder === undefined) {
-      this.internalColumnOrder.set(nextState.columnOrder);
-    }
-
-    if (controlled.columnPinning === undefined) {
-      this.internalColumnPinning.set(nextState.columnPinning);
-    }
-
-    if (controlled.columnSizing === undefined) {
-      this.internalColumnSizing.set(nextState.columnSizing);
-    }
-
-    if (controlled.rowSelection === undefined) {
-      this.internalRowSelection.set(nextState.rowSelection);
-    }
-
-    if (controlled.pagination === undefined) {
-      this.internalPagination.set(nextState.pagination);
-    }
   }
 
   // ─── Template state contexts ───
@@ -1349,10 +1287,6 @@ export class NatTableState<TData extends RowData = RowData> {
   // ─── Lifecycle effects (seed + render cycle) ───
 
   /**
-   * Self-seeding effect: applies the initial state when it becomes available.
-   * Must be called in the injection context (constructor or field initializer).
-   */
-  /**
    * Applies the table options in the renderer's own change-detection pass.
    * Register it after the renderer's input-bridging effects: those are view
    * effects, while `injectTable`'s own options effect is a root effect that has
@@ -1367,13 +1301,17 @@ export class NatTableState<TData extends RowData = RowData> {
     });
   }
 
+  /**
+   * Seeds the surface state once `initialState` is available. Must be called
+   * in the injection context (constructor or field initializer).
+   */
   public registerSeedEffect(): void {
     effect(() => {
       if (this.hasSeededInitialState()) {
         return;
       }
 
-      this.seedInitialState(this.initialState());
+      this.seedInitialState();
     });
   }
 

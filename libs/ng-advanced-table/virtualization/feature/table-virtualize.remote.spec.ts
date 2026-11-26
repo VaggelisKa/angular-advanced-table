@@ -107,7 +107,7 @@ class RemoteClientModesHost {
     const service = inject(NatTableService);
     const destroyRef = inject(DestroyRef);
 
-    service.enableSorting.set(true);
+    service.configure({ enableSorting: true });
     service.registerPagination();
     service.registerSearch();
     destroyRef.onDestroy(() => {

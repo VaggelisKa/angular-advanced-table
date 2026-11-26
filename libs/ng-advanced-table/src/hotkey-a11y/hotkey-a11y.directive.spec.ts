@@ -169,7 +169,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
 
     describe('WHEN: update keybindings dynamically when service keybindings change', () => {
       it('THEN: it refreshes the scoped shortcut attributes', async () => {
-        service.surfaceKeybindings.set({ rowActivate: 'Ctrl+Enter' });
+        service.configure({ keybindings: { rowActivate: 'Ctrl+Enter' } });
         fixture.detectChanges();
         await fixture.whenStable();
 
@@ -210,7 +210,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
 
     describe('WHEN: the table locale has a registered dictionary', () => {
       it('THEN: it phrases the shortcut suffix in that locale', async () => {
-        service.locale.set('da');
+        service.configure({ locale: 'da' });
         fixture.detectChanges();
         await fixture.whenStable();
 
@@ -223,7 +223,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
 
     describe('WHEN: the table overrides the shortcut label formatter through accessibilityText', () => {
       it('THEN: it writes the overridden label and keeps tracking text changes', async () => {
-        service.accessibilityText.set({ shortcutLabel: ({ label, shortcutText }) => `${label}, ${shortcutText}` });
+        service.configure({ accessibilityText: { shortcutLabel: ({ label, shortcutText }) => `${label}, ${shortcutText}` } });
         fixture.detectChanges();
         await fixture.whenStable();
 

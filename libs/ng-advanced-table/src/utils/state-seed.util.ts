@@ -1,5 +1,6 @@
 import type { PaginationState, Updater } from '@tanstack/angular-table';
 
+import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
 import type { NatTableUserState } from '../common/table-state.type';
 
 export const isUnavailableRequiredInputError = (error: unknown): error is Error & { readonly code?: number } => {
@@ -58,3 +59,35 @@ export const resolveSeedState = (initialState: Partial<NatTableUserState>, defau
     pageSize: orDefault(initialState.pagination?.pageSize, defaults.pagination.pageSize)
   }
 });
+
+const USER_STATE_KEYS = Object.keys(DEFAULT_TABLE_STATE) as readonly (keyof NatTableUserState)[];
+
+/** Overlays every defined controlled slice onto the owned state; keeps `owned` when nothing is controlled. */
+export const resolveControlledState = (controlled: Partial<NatTableUserState>, owned: NatTableUserState): NatTableUserState => {
+  let resolved: Record<string, unknown> | null = null;
+
+  for (const key of USER_STATE_KEYS) {
+    if (controlled[key] !== undefined) {
+      (resolved ??= { ...owned })[key] = controlled[key];
+    }
+  }
+
+  return (resolved as NatTableUserState | null) ?? owned;
+};
+
+/** Copies the slices of `next` the consumer does not control into `owned`; controlled slices keep their owned value. */
+export const mergeUncontrolledState = (
+  owned: NatTableUserState,
+  next: NatTableUserState,
+  controlled: Partial<NatTableUserState>
+): NatTableUserState => {
+  const merged: Record<string, unknown> = { ...owned };
+
+  for (const key of USER_STATE_KEYS) {
+    if (controlled[key] === undefined) {
+      merged[key] = next[key];
+    }
+  }
+
+  return merged as NatTableUserState;
+};

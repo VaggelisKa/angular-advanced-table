@@ -15,7 +15,7 @@ Keeping this boundary clear makes the reusable packages stable while still letti
 
 ## Surface And Controller
 
-Most companion controls should live inside `NatTableSurface`. The surface creates the scoped `NatTableService`, passes state inputs to the table, receives table state changes, and lets controls patch the same controller.
+Most companion controls should live inside `NatTableSurface`. The surface creates the scoped `NatTableService` and initiates everything: it hands its inputs to the service, and turns the state changes the service reports into `[(state)]` and the slice outputs. The service is the single owner of the table state, so every renderer and control inside the surface reads and patches the same state.
 
 ```html
 <nat-table-surface [initialState]="initialState">
@@ -72,7 +72,7 @@ export class DetachedPositions {
 }
 ```
 
-Without a surface, configure surface-owned settings such as `enableSorting` by calling `patchState({ enableSorting: true })` on the `NatTableService` you provided. Prefer the scoped surface for normal pages. Use direct controller binding only when the layout requires controls outside the surface.
+Without a surface, your host is the initiator: configure surface-owned settings and state by calling `configure({ enableSorting: true, initialState })` on the `NatTableService` you provided, read the current state from its `state` signal, and follow committed changes through its `stateChanges` signal. Prefer the scoped surface for normal pages. Use direct controller binding only when the layout requires controls outside the surface.
 
 ## Stock Controls
 

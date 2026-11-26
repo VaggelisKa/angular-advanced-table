@@ -235,11 +235,11 @@ class StickyVirtualTableHost {
   protected readonly columns = columns;
 
   public constructor() {
-    this.tableService.stickyHeader.set(false);
+    this.tableService.configure({ stickyHeader: false });
   }
 
   public enableStickyHeader(): void {
-    this.tableService.stickyHeader.set(true);
+    this.tableService.configure({ stickyHeader: true });
   }
 }
 
@@ -267,7 +267,7 @@ class VirtualGeometryHost {
   protected readonly columns = columns;
 
   public constructor() {
-    inject(NatTableService).stickyHeader.set(false);
+    inject(NatTableService).configure({ stickyHeader: false });
   }
 }
 
