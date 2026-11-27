@@ -150,8 +150,8 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly hasSeededState = this.seeded.asReadonly();
 
   /**
-   * The latest committed state, including proposed values for controlled
-   * slices. The initiator diffs it to emit one output per changed slice.
+   * The latest committed (or seed-reported) state, including proposed values for
+   * controlled slices. The initiator diffs it to emit one output per changed slice.
    */
   public readonly stateChanges = this.lastCommit.asReadonly();
 
@@ -200,8 +200,12 @@ export class NatTableService<TData extends RowData = RowData> {
    * Seeds the owned state from `initialState` once per service. Returns
    * `false` when it was already seeded, so a renderer mounting after a swap
    * keeps the current state instead of resetting it.
+   *
+   * `report` gives the renderer's resolved view of the seed, which goes to the
+   * initiator through `stateChanges` but is not stored: owning the expanded
+   * column order would pin the columns seen at mount over later `[columns]`.
    */
-  public seedState(): boolean {
+  public seedState(report?: () => NatTableUserState): boolean {
     if (this.seeded()) {
       return false;
     }
@@ -210,6 +214,7 @@ export class NatTableService<TData extends RowData = RowData> {
 
     this.ownedState.set({ ...seed, sorting: normalizeSortingState(seed.sorting, this.enableMultiSort()) });
     this.seeded.set(true);
+    this.lastCommit.set(report?.() ?? null);
 
     return true;
   }

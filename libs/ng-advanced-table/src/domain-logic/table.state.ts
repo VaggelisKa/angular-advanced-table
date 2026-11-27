@@ -1041,9 +1041,7 @@ export class NatTableState<TData extends RowData = RowData> {
    * service already seeded and keeps the current state.
    */
   public seedInitialState(): void {
-    if (this.natTableService.seedState()) {
-      this.natTableService.commitState(this.getReportedState());
-    }
+    this.natTableService.seedState(() => this.getReportedState());
   }
 
   /** `mergedState` with the consumer's ungated global filter, as reported to the surface. */

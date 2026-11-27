@@ -12,11 +12,11 @@ type Row = {
   readonly status: string;
 };
 
-const columns: ColumnDef<Row, unknown>[] = [
-  { accessorKey: 'id', header: 'Id', meta: { label: 'Id', rowHeader: true } },
-  { accessorKey: 'name', header: 'Name', meta: { label: 'Name' } },
-  { accessorKey: 'status', header: 'Status', meta: { label: 'Status' } }
-];
+const idColumn: ColumnDef<Row, unknown> = { accessorKey: 'id', header: 'Id', meta: { label: 'Id', rowHeader: true } };
+const nameColumn: ColumnDef<Row, unknown> = { accessorKey: 'name', header: 'Name', meta: { label: 'Name' } };
+const statusColumn: ColumnDef<Row, unknown> = { accessorKey: 'status', header: 'Status', meta: { label: 'Status' } };
+
+const columns: ColumnDef<Row, unknown>[] = [idColumn, nameColumn, statusColumn];
 
 @Component({
   selector: 'nat-service-swap-host',
@@ -24,9 +24,9 @@ const columns: ColumnDef<Row, unknown>[] = [
   providers: [NatTableService],
   template: `
     @if (isTable()) {
-      <nat-table [columns]="columns" [data]="rows" accessibleName="Swap table" />
+      <nat-table [columns]="columns()" [data]="rows" accessibleName="Swap table" />
     } @else {
-      <nat-list [columns]="columns" [data]="rows" accessibleName="Swap list" />
+      <nat-list [columns]="columns()" [data]="rows" accessibleName="Swap list" />
     }
   `
 })
@@ -36,7 +36,7 @@ class ServiceSwapHost {
     { id: 'r2', name: 'Beta', status: 'bad' }
   ];
 
-  protected readonly columns = columns;
+  public readonly columns = signal(columns);
   public readonly service = inject(NatTableService);
   public readonly isTable = signal(true);
   public readonly grid = viewChild(NatTable);
@@ -75,6 +75,28 @@ describe('FEATURE: renderer swap under a host-provided NatTableService', () => {
 
         expect(host.grid()?.table.atoms.sorting.get()).toStrictEqual([{ id: 'status', desc: true }]);
         expect(host.service.state().sorting).toStrictEqual([{ id: 'status', desc: true }]);
+      });
+    });
+  });
+
+  describe('GIVEN: a host that changes its column definitions before any user action', () => {
+    describe('WHEN: the columns are reordered after mount', () => {
+      it('THEN: it renders the new definition order instead of the order seen at mount', async () => {
+        const fixture = TestBed.createComponent(ServiceSwapHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        host.columns.set([statusColumn, idColumn, nameColumn]);
+        await fixture.whenStable();
+
+        expect(host.service.state().columnOrder).toStrictEqual([]);
+        expect(
+          host
+            .grid()
+            ?.table.getVisibleLeafColumns()
+            .map((column) => column.id)
+        ).toStrictEqual(['status', 'id', 'name']);
       });
     });
   });

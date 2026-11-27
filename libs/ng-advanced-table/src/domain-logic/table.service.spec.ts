@@ -248,6 +248,17 @@ describe('FEATURE: NatTableService', () => {
       });
     });
 
+    describe('WHEN: a renderer seeds with a report of its resolved state', () => {
+      it('THEN: it exposes the report through stateChanges without storing it', () => {
+        const service = createService();
+
+        service.seedState(() => ({ ...service.state(), columnOrder: ['a', 'b'] }));
+
+        expect(service.stateChanges()?.columnOrder).toStrictEqual(['a', 'b']);
+        expect(service.state().columnOrder).toStrictEqual([]);
+      });
+    });
+
     describe('WHEN: the binding stops controlling a slice', () => {
       it('THEN: it falls back to the state the service owns for that slice', () => {
         const service = createService();
