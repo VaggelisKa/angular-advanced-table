@@ -91,8 +91,6 @@ const compareAlphanumericChunks = (a: unknown, b: unknown): number => {
 };
 
 const toValue = (value: unknown): unknown => value;
-// Relational comparison reads a plain Date through `valueOf()`, so its time
-// compares the same; subclasses keep the object, since they may override it.
 // v9's `sortFn_datetime` resolves every Date instance, subclasses included,
 // through `getTime()` (v8 compared Dates with `>`/`<`, which used `valueOf`).
 const toTime = (value: unknown): unknown => (value instanceof Date ? value.getTime() : value);

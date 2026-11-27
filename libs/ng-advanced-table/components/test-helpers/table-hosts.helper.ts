@@ -78,3 +78,20 @@ export class PaginationToolbarHost {
     }
   };
 }
+
+@Component({
+  selector: 'nat-pagination-before-table-host',
+  imports: [NatTable, NatTablePagination, NatTableSurface],
+  template: `
+    <nat-table-surface [(state)]="state">
+      <nat-table-pagination [pageSizeOptions]="pageSizeOptions()" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
+    </nat-table-surface>
+  `
+})
+export class PaginationBeforeTableHost {
+  protected readonly rows = signal<Row[]>(buildRows(120));
+  protected readonly columns = baseColumns;
+  public readonly pageSizeOptions = signal<readonly number[]>([10, 25, 50]);
+  public readonly state = signal<Partial<NatTableUserState>>({ pagination: { pageIndex: 0, pageSize: 10 } });
+}

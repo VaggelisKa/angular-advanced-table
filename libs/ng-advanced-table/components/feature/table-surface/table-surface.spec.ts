@@ -3,7 +3,7 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { root, setScrollMetrics } from '../../test-helpers/table-dom.helper';
-import { PaginationToolbarHost, TableHost } from '../../test-helpers/table-hosts.helper';
+import { PaginationBeforeTableHost, PaginationToolbarHost, TableHost } from '../../test-helpers/table-hosts.helper';
 
 describe('FEATURE: NatTable UI', () => {
   let fixture: ComponentFixture<TableHost>;
@@ -11,7 +11,7 @@ describe('FEATURE: NatTable UI', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, PaginationToolbarHost],
+      imports: [TableHost, PaginationToolbarHost, PaginationBeforeTableHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
@@ -333,6 +333,29 @@ describe('FEATURE: NatTable UI', () => {
         for (const control of controls) {
           expect(control.getAttribute('tabindex')).toBeNull();
         }
+      });
+    });
+  });
+
+  describe('GIVEN: pagination placed before the table under a controlled page size', () => {
+    describe('WHEN: the page size and the page size options change together', () => {
+      it('THEN: it keeps the controlled page size instead of correcting it from the stale one', async () => {
+        fixture.destroy();
+        const paginationFixture = TestBed.createComponent(PaginationBeforeTableHost);
+        const paginationHost = paginationFixture.componentInstance;
+
+        await paginationFixture.whenStable();
+        expect(paginationHost.state().pagination?.pageSize).toBe(10);
+
+        // 10 is not among the new options, but the new controlled size (50) is.
+        paginationHost.state.update((state) => ({ ...state, pagination: { pageIndex: 0, pageSize: 50 } }));
+        paginationHost.pageSizeOptions.set([25, 50, 100]);
+        await paginationFixture.whenStable();
+
+        expect(paginationHost.state().pagination?.pageSize).toBe(50);
+        expect(
+          (root(paginationFixture).querySelector('nat-table-pagination select.page-size-select') as HTMLSelectElement).value
+        ).toBe('50');
       });
     });
   });

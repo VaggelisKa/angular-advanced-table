@@ -1162,6 +1162,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'What you need to do', path: '#what-you-need-to-do' },
       { label: 'Run the codemod', path: '#run-the-codemod' },
       { label: 'What stays the same', path: '#what-stays-the-same' },
+      { label: 'Column and table meta', path: '#column-and-table-meta' },
       { label: 'Column pinning', path: '#column-pinning' },
       { label: 'Sorting functions', path: '#sorting-functions' },
       { label: 'Reading table state', path: '#reading-table-state' },

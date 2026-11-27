@@ -5,21 +5,29 @@ export type * from '@tanstack/angular-table';
 // shadow the same names from the star export above, so consumers keep writing
 // `ColumnDef<Order>` instead of `ColumnDef<typeof features, Order>`.
 export type {
+  AccessorColumnDef,
+  AccessorFnColumnDef,
+  AccessorKeyColumnDef,
   Cell,
   CellContext,
   Column,
   ColumnDef,
   ColumnDefBase,
+  DisplayColumnDef,
   FilterFn,
+  GroupColumnDef,
   Header,
   HeaderContext,
   HeaderGroup,
+  IdentifiedColumnDef,
   NatTableFeatures,
   Row,
   RowModel,
   SortFn,
   SortingFn,
   Table,
+  TableOptions,
+  TableState,
   VisibilityState
 } from './common/table-features.type';
 
