@@ -2,11 +2,11 @@ import { Component, DestroyRef, Directive, inject, input, provideZonelessChangeD
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
 import { flexRenderComponent } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
 import type { NatTableRowRenderStrategy, NatTableVirtualItem } from '../common/row-render-strategy.type';
+import type { ColumnDef } from '../common/table-features.type';
 import { NatTableRowRenderStrategyRegistry } from '../domain-logic/table-row-render-strategy.service';
 import { NatTableService } from '../domain-logic/table.service';
 

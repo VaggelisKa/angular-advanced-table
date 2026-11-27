@@ -1,4 +1,6 @@
-import type { Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Row } from '../common/table-features.type';
 
 const NOT_READ: unique symbol = Symbol('notRead');
 

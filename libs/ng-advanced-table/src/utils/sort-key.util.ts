@@ -1,5 +1,7 @@
-import type { RowData, SortingFn } from '@tanstack/angular-table';
-import { reSplitAlphaNumeric, sortingFns } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+import { reSplitAlphaNumeric, sortFns } from '@tanstack/angular-table';
+
+import type { SortingFn } from '../common/table-features.type';
 
 /**
  * One alphanumeric chunk: its `parseInt` value for a run of digits, the raw
@@ -89,21 +91,20 @@ const compareAlphanumericChunks = (a: unknown, b: unknown): number => {
 };
 
 const toValue = (value: unknown): unknown => value;
-// Relational comparison reads a plain Date through `valueOf()`, so its time
-// compares the same; subclasses keep the object, since they may override it.
-const toTime = (value: unknown): unknown =>
-  value instanceof Date && Object.getPrototypeOf(value) === Date.prototype ? value.getTime() : value;
+// v9's `sortFn_datetime` resolves every Date instance, subclasses included,
+// through `getTime()` (v8 compared Dates with `>`/`<`, which used `valueOf`).
+const toTime = (value: unknown): unknown => (value instanceof Date ? value.getTime() : value);
 const toLowerText = (value: unknown): string => toSortString(value).toLowerCase();
 const toLowerChunks = (value: unknown): readonly AlphanumericChunk[] => toAlphanumericChunks(toLowerText(value));
 const toChunks = (value: unknown): readonly AlphanumericChunk[] => toAlphanumericChunks(toSortString(value));
 
 const KEYED_SORTING_FNS = new Map<SortingFn<RowData>, KeyedSortingFn>([
-  [sortingFns.basic, { toKey: toValue, compare: compareBasic }],
-  [sortingFns.datetime, { toKey: toTime, compare: compareDatetime }],
-  [sortingFns.text, { toKey: toLowerText, compare: compareBasic }],
-  [sortingFns.textCaseSensitive, { toKey: toSortString, compare: compareBasic }],
-  [sortingFns.alphanumeric, { toKey: toLowerChunks, compare: compareAlphanumericChunks }],
-  [sortingFns.alphanumericCaseSensitive, { toKey: toChunks, compare: compareAlphanumericChunks }]
+  [sortFns.basic, { toKey: toValue, compare: compareBasic }],
+  [sortFns.datetime, { toKey: toTime, compare: compareDatetime }],
+  [sortFns.text, { toKey: toLowerText, compare: compareBasic }],
+  [sortFns.textCaseSensitive, { toKey: toSortString, compare: compareBasic }],
+  [sortFns.alphanumeric, { toKey: toLowerChunks, compare: compareAlphanumericChunks }],
+  [sortFns.alphanumericCaseSensitive, { toKey: toChunks, compare: compareAlphanumericChunks }]
 ]);
 
 /**

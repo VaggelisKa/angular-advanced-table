@@ -66,8 +66,14 @@ export class NatTablePagination<TData extends RowData = RowData> {
 
     // Ensure we have a valid page size selected from the available options.
     effect(() => {
-      const selected = this.selectedPageSize();
       const options = this.resolvedPageSizeOptions();
+
+      // This effect can run before the table's own sync in the same pass (a
+      // control placed before <nat-table>), so apply pending state first or a
+      // controlled page size that just changed reads as the old one.
+      this.controller()?.flushTableOptions?.();
+
+      const selected = this.selectedPageSize();
 
       if (options.length > 0 && !options.some((opt) => opt.pageSize === selected)) {
         this.setPageSize(options[0].pageSize);
@@ -84,7 +90,7 @@ export class NatTablePagination<TData extends RowData = RowData> {
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 
   // Page Size Logic
-  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
+  protected readonly selectedPageSize = computed(() => this.table()?.atoms.pagination.get().pageSize ?? 0);
 
   private readonly resolvedPageSizeAccessibilityLabels = computed(() =>
     mergePageSizeLabels(this.tableUiIntl().pageSize?.accessibilityLabels, this.pageSizeAccessibilityLabels())
@@ -130,7 +136,7 @@ export class NatTablePagination<TData extends RowData = RowData> {
   }
 
   // Pager Logic
-  protected readonly pageIndex = computed(() => this.table()?.getState().pagination.pageIndex ?? 0);
+  protected readonly pageIndex = computed(() => this.table()?.atoms.pagination.get().pageIndex ?? 0);
   protected readonly pageCount = computed(() => Math.max(1, this.table()?.getPageCount() ?? 0));
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
   protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);

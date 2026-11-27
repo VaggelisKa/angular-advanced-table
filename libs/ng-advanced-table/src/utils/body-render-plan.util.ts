@@ -1,6 +1,6 @@
 import { isDevMode } from '@angular/core';
 
-import type { Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import type {
   NatTableBodyRenderPlan,
@@ -8,6 +8,7 @@ import type {
   NatTableRowRenderStrategy,
   NatTableVirtualItem
 } from '../common/row-render-strategy.type';
+import type { Row } from '../common/table-features.type';
 
 const isUsableVirtualItem = (item: NatTableVirtualItem, rowCount: number, totalSize: number): boolean =>
   Number.isInteger(item.index) &&

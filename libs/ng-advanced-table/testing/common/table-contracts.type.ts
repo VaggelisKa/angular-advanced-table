@@ -1,21 +1,18 @@
 import type { Signal } from '@angular/core';
 
 import type {
-  CellContext,
-  Column,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   ColumnSizingState,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
-  Table,
-  Updater,
-  VisibilityState
+  Updater
 } from '@tanstack/angular-table';
+
+import type { CellContext, Column, Row, Table, VisibilityState } from 'ng-advanced-table';
 
 /**
  * Internal source of truth for normalized table state shared by the published
@@ -104,6 +101,12 @@ export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
  */
 export type NatTableUiController<TData extends RowData = RowData> = {
   readonly table: Table<TData>;
+  /**
+   * Applies pending state to `table` now. A companion that writes state from an
+   * effect calls it before reading `table.atoms`, since the renderer otherwise
+   * applies changes only in its own change-detection pass.
+   */
+  flushTableOptions?(): void;
   enableGlobalFilter(): boolean;
   enablePagination(): boolean;
   patchState(

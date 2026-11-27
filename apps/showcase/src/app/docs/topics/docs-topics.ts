@@ -90,7 +90,7 @@ const columnLayoutSnippets = [
     `
 readonly tableState = signal<Partial<NatTableUserState>>({
   columnOrder: ['name', 'status', 'value'],
-  columnPinning: { left: ['name'], right: ['value'] },
+  columnPinning: { start: ['name'], end: ['value'] },
   columnVisibility: { status: false }
 });
 
@@ -1154,6 +1154,26 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     related: [
       { label: 'Composition', path: '/docs/composition' },
       { label: 'Columns', path: '/docs/columns' }
+    ]
+  },
+  {
+    id: 'tanstack-v9-migration',
+    contents: [
+      { label: 'What you need to do', path: '#what-you-need-to-do' },
+      { label: 'Run the codemod', path: '#run-the-codemod' },
+      { label: 'What stays the same', path: '#what-stays-the-same' },
+      { label: 'Column and table meta', path: '#column-and-table-meta' },
+      { label: 'Column pinning', path: '#column-pinning' },
+      { label: 'Sorting functions', path: '#sorting-functions' },
+      { label: 'Reading table state', path: '#reading-table-state' },
+      { label: 'Row selection', path: '#row-selection' },
+      { label: 'Cell renderers', path: '#cell-renderers' },
+      { label: 'Custom render content', path: '#custom-render-content' }
+    ],
+    blocks: [{ kind: 'markdown', id: 'tanstack-v9-migration-prose', markdownPath: '/docs/tanstack-v9-migration.md' }],
+    related: [
+      { label: 'Columns', path: '/docs/columns' },
+      { label: 'State', path: '/docs/state' }
     ]
   },
   {

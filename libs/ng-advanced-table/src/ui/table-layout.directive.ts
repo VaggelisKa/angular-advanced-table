@@ -15,11 +15,13 @@ type NatTableResizeGuideGeometry = {
  * the template free of inline styles while rendering identically. The input
  * alias equals the selector, so `no-input-rename` permits it without a rename.
  */
+// Pinned offsets use logical insets: the start zone (`left` in the render
+// state) sticks to the inline start, which is the right edge in RTL.
 @Directive({
   selector: 'th[natTableHeaderCellLayout]',
   host: {
-    '[style.left.px]': 'state()?.left',
-    '[style.right.px]': 'state()?.right',
+    '[style.inset-inline-start.px]': 'state()?.left',
+    '[style.inset-inline-end.px]': 'state()?.right',
     '[style.width]': 'state()?.headerWidth',
     '[style.min-width]': 'state()?.headerMinWidth',
     '[style.max-width]': 'state()?.headerMaxWidth'
@@ -41,8 +43,8 @@ export class NatTableHeaderCellLayout {
   host: {
     '[style.--nat-table-cell-max-lines]': 'state()?.cellMaxLines',
     '[style.height]': 'state()?.cellHeight',
-    '[style.left.px]': 'state()?.left',
-    '[style.right.px]': 'state()?.right',
+    '[style.inset-inline-start.px]': 'state()?.left',
+    '[style.inset-inline-end.px]': 'state()?.right',
     '[style.width]': 'state()?.width',
     '[style.min-width]': 'state()?.minWidth',
     '[style.max-width]': 'state()?.maxWidth'

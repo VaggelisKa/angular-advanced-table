@@ -3,8 +3,8 @@ import type { ColumnOrderState, ColumnPinningState, ColumnSizingState, Paginatio
 import type { NatTableUserState } from './table-state.type';
 
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
-  left: [],
-  right: []
+  start: [],
+  end: []
 };
 const DEFAULT_PAGINATION: PaginationState = {
   pageIndex: 0,

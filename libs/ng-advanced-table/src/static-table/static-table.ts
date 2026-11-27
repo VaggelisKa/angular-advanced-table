@@ -15,12 +15,13 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Cell, ColumnDef, FilterFn, RowData, Row as TanstackRow, Updater } from '@tanstack/angular-table';
+import type { RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import type { NatTableCellTemplateContext } from '../common/cell-template.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
+import type { Cell, ColumnDef, FilterFn, Row as TanstackRow } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type {
@@ -148,6 +149,11 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
   public readonly enablePagination = this.state.enablePagination;
   public readonly enableGlobalFilter = this.state.enableGlobalFilter;
   public readonly table = this.state.table;
+
+  public flushTableOptions(): void {
+    this.state.flushTableOptions();
+  }
+
   /** Stable DOM id for the rendered `<table>` element. */
   public readonly tableElementId = this.state.tableElementId;
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
@@ -327,11 +333,13 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
-    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     effect(() => this.state.tableRegionRef.set(this.tableRegionRef()));
 
+    // Seed and options sync come before any effect that reads the table.
     this.state.registerSeedEffect();
+    this.state.registerOptionsSyncEffect();
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();
 

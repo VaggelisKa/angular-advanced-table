@@ -19,9 +19,10 @@ import {
   viewChildren
 } from '@angular/core';
 
-import type { Cell, ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
+import type { RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import type { Cell, ColumnDef, FilterFn, HeaderContext, Row } from '../common/table-features.type';
 import { NAT_LIST_ITEM_LAYOUT } from './common/list-layout.const';
 import type { NatListItemLayout } from './common/list-layout.type';
 import type { NatListStateKey } from './common/list-state.type';
@@ -202,6 +203,11 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   public readonly enablePagination = this.state.enablePagination;
   public readonly enableGlobalFilter = this.state.enableGlobalFilter;
   public readonly table = this.state.table;
+
+  public flushTableOptions(): void {
+    this.state.flushTableOptions();
+  }
+
   /** Stable DOM id for the rendered `<ul>` element. */
   public readonly tableElementId = this.state.tableElementId;
   /** Scrollable wrapper around the rendered list for companion scroll controls. */
@@ -516,7 +522,6 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
-    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     effect(() => this.state.tableRegionRef.set(this.listRegionRef()));
 
@@ -539,7 +544,10 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
       );
     });
 
+    // Seed and options sync come before any effect that reads the table.
     this.state.registerSeedEffect();
+    this.state.registerOptionsSyncEffect();
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();
 

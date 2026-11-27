@@ -1,6 +1,7 @@
-import type { Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { genericGlobalFilter } from './global-filter.util';
+import type { Row } from '../common/table-features.type';
 
 const buildRow = (id: string, values: Record<string, unknown>): Row<RowData> =>
   ({

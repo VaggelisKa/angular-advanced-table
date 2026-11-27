@@ -222,7 +222,7 @@ export class TableSearch<TData extends RowData = RowData> {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly controller = computed(() => this.tableService.controller());
-  protected readonly value = computed(() => this.controller()?.table.getState().globalFilter ?? '');
+  protected readonly value = computed(() => this.controller()?.table.atoms.globalFilter.get() ?? '');
 
   constructor() {
     this.tableService.registerSearch();

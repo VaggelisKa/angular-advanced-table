@@ -1,6 +1,7 @@
 import { flexRenderComponent } from '@tanstack/angular-table';
-import type { ColumnDef, HeaderContext, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { ColumnDef, HeaderContext } from 'ng-advanced-table';
 import type { NatTableAccessibilityHeaderActionLabels } from 'ng-advanced-table/locale';
 
 import { NatTableHeaderActions } from './table-header-actions';
@@ -124,10 +125,11 @@ const wrapColumnHeader = <TData extends RowData>(
   column: ColumnDef<TData, unknown>,
   options: NatTableHeaderActionsOptions
 ): ColumnDef<TData, unknown> => {
-  const nextColumn: ColumnDef<TData, unknown> & {
+  // A copy asserted back to the input's type: an object spread of the v9
+  // ColumnDef union fails to type-check (an accessor variant requires
+  // `accessorFn`), though the runtime copy is the same as in v8.
+  const nextColumn = Object.assign({}, column) as ColumnDef<TData, unknown> & {
     columns?: ColumnDef<TData, unknown>[];
-  } = {
-    ...column
   };
 
   if (nextColumn.columns) {

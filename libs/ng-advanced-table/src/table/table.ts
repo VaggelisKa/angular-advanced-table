@@ -18,7 +18,7 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Cell, Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
+import type { RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
@@ -31,6 +31,7 @@ import type { NatTableRowRenderedEvent } from '../common/row-render.type';
 import { NAT_TABLE_ROW_WINDOW_HOST } from '../common/row-window-host.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
+import type { Cell, Column, ColumnDef, FilterFn, Header, HeaderGroup, Row } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type {
@@ -206,6 +207,11 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public readonly enablePagination = this.state.enablePagination;
   public readonly enableGlobalFilter = this.state.enableGlobalFilter;
   public readonly table = this.state.table;
+
+  public flushTableOptions(): void {
+    this.state.flushTableOptions();
+  }
+
   /** Stable DOM id for the rendered `<table>` element. */
   public readonly tableElementId = this.state.tableElementId;
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
@@ -464,13 +470,16 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
-    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     // ── Wire table region ref to state (read by all services) ──
     effect(() => this.state.tableRegionRef.set(this.tableRegionRef()));
 
     // ── Lifecycle effects (seed + render cycle delegated to state) ──
+    // Seed and options sync come right after the input bridges and before any
+    // effect that reads the table, so those reads see the current options.
     this.state.registerSeedEffect();
+    this.state.registerOptionsSyncEffect();
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
     this.state.registerRenderCycleEffect();
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();

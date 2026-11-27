@@ -1,6 +1,7 @@
-import type { Column, ColumnSizingState, RowData } from '@tanstack/angular-table';
+import type { ColumnSizingState, RowData } from '@tanstack/angular-table';
 
 import type { TableColumnSizingState } from '../../common/column-render.type';
+import type { Column } from '../../common/table-features.type';
 import { readColumnEntry } from '../../utils/column-def.util';
 import { DEFAULT_MIN_COLUMN_WIDTH, RESIZE_KEYBOARD_STEP, RESIZE_KEYBOARD_STEP_LARGE } from '../column-resize.const';
 

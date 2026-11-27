@@ -2,9 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
-import type { NatTableUserState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 
 import { NatTableSurface } from './table-surface';

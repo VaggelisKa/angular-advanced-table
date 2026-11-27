@@ -62,7 +62,7 @@ export const mockOrderRows: readonly MockOrderRow[] = [
 
 export const preconfiguredTableState: Partial<NatTableUserState> = {
   columnPinning: {
-    left: ['owner'],
-    right: ['actions']
+    start: ['owner'],
+    end: ['actions']
   }
 };

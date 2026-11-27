@@ -1,5 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 
+import type { RowData } from '@tanstack/angular-table';
+
 import {
   NAT_EN_LOCALE_ID,
   NAT_TABLE_RENDER_METRICS_INTL,
@@ -29,7 +31,7 @@ type RenderHealthState = {
   templateUrl: './panel.html',
   styleUrl: './panel.css'
 })
-export class NatRenderMetricsPanel<TData = unknown> {
+export class NatRenderMetricsPanel<TData extends RowData = RowData> {
   /** Shared store. */
   public readonly store = input.required<NatTableRenderMetricsStore>();
   /** Controlled table controller. Used to inherit the table locale when provided. */

@@ -16,7 +16,7 @@ export const computeRowSelection = (
   const next: RowSelectionState = {};
 
   for (const id of Object.keys(previousSelection)) {
-    if (previousSelection[id] && source.rowIds.has(id)) {
+    if (source.rowIds.has(id)) {
       next[id] = true;
     }
   }

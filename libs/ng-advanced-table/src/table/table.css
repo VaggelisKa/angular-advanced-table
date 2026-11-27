@@ -521,6 +521,26 @@ tbody .data-row:has(+ .sub-header-row) .data-cell {
       var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent));
 }
 
+/* RTL mirror: the start zone sits on the right, so its divider and fade face
+   left, and the end zone's face right. */
+:where(table[dir='rtl']) .has-pinned-edge-left {
+  box-shadow:
+    inset 1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%))),
+    calc(-1 * var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px))) 0
+      var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px))
+      calc(var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px)) / -2)
+      var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent));
+}
+
+:where(table[dir='rtl']) .has-pinned-edge-right {
+  box-shadow:
+    inset -1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%))),
+    var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px)) 0
+      var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px))
+      calc(var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px)) / -2)
+      var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent));
+}
+
 .header-cell.is-align-end,
 .data-cell.is-align-end {
   text-align: end;

@@ -1,7 +1,8 @@
-import type { ColumnDef, RowData, SortingFn } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { DEFAULT_CELL_MAX_LINES } from '../common/column-meta.const';
 import type { TableColumnSizingState } from '../common/column-render.type';
+import type { ColumnDef, SortingFn } from '../common/table-features.type';
 
 /**
  * Reads a column-keyed record entry, honestly typed `T | undefined`: a column id
@@ -81,7 +82,8 @@ export const patchLeafColumnDefSorting = <TData extends RowData>(
       return patchedChildren === childColumns ? column : { ...column, columns: patchedChildren };
     }
 
-    return resolveColumnDefId(column) === columnId ? { ...column, sortingFn } : column;
+    // v9 reads the column's sort function from `sortFn` (v8: `sortingFn`).
+    return resolveColumnDefId(column) === columnId ? { ...column, sortFn: sortingFn } : column;
   });
 
   return patched.some((column, index) => column !== columns[index]) ? patched : columns;

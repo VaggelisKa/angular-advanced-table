@@ -1,7 +1,5 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 
-import type { CellContext, Column, Header } from '@tanstack/angular-table';
-
 import {
   canResizeColumn,
   getCellTone,
@@ -9,11 +7,11 @@ import {
   isColumnResizable,
   isResizeKey,
   originatesFromInteractiveDescendant,
-  resolveDraggedColumnId,
-  scrollElementHorizontallyIntoView
+  resolveDraggedColumnId
 } from './interaction.util';
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../cell-interaction/cell-interaction.const';
 import type { NatTableCellTone } from '../common/column-meta.type';
+import type { CellContext, Column, Header } from '../common/table-features.type';
 
 /** Minimal row shape shared by the column/header stubs below. */
 type Row = { readonly id: string; readonly amount: number };
@@ -55,10 +53,6 @@ const dispatchFromWithin = (cell: HTMLElement, origin: HTMLElement): boolean => 
   cell.removeEventListener('click', handler);
 
   return result;
-};
-
-const mockRect = (element: HTMLElement, left: number, right: number): void => {
-  element.getBoundingClientRect = (): DOMRect => ({ left, right }) as DOMRect;
 };
 
 describe('FEATURE: interaction utilities', () => {
@@ -325,53 +319,6 @@ describe('FEATURE: interaction utilities', () => {
         const fakeEvent = { target: null, currentTarget: document.createElement('div') } as unknown as Event;
 
         expect(originatesFromInteractiveDescendant(fakeEvent)).toBe(false);
-      });
-    });
-  });
-
-  describe('GIVEN: scrollElementHorizontallyIntoView', () => {
-    describe('WHEN: the element sits left of the visible container', () => {
-      it('THEN: it scrolls left by the difference between the edges', () => {
-        const container = document.createElement('div');
-        const element = document.createElement('div');
-
-        mockRect(container, 100, 500);
-        container.scrollLeft = 50;
-        mockRect(element, 60, 140);
-
-        scrollElementHorizontallyIntoView(container, element);
-
-        expect(container.scrollLeft).toBe(10);
-      });
-    });
-
-    describe('WHEN: the element sits right of the visible container', () => {
-      it('THEN: it scrolls right by the difference between the edges', () => {
-        const container = document.createElement('div');
-        const element = document.createElement('div');
-
-        mockRect(container, 100, 500);
-        container.scrollLeft = 50;
-        mockRect(element, 520, 600);
-
-        scrollElementHorizontallyIntoView(container, element);
-
-        expect(container.scrollLeft).toBe(150);
-      });
-    });
-
-    describe('WHEN: the element is already fully within the container', () => {
-      it('THEN: it leaves the scroll position unchanged', () => {
-        const container = document.createElement('div');
-        const element = document.createElement('div');
-
-        mockRect(container, 100, 500);
-        container.scrollLeft = 50;
-        mockRect(element, 150, 450);
-
-        scrollElementHorizontallyIntoView(container, element);
-
-        expect(container.scrollLeft).toBe(50);
       });
     });
   });

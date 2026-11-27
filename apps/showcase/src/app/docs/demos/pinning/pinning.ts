@@ -9,13 +9,13 @@ import type { DemoToggleOption } from '../../../ui';
 import { DEMO_ITEMS, demoItemBaseColumns } from '../demo-data';
 import type { DemoItem } from '../demo-data';
 
-type PinSide = 'left' | 'none' | 'right';
+type PinSide = 'start' | 'none' | 'end';
 type TableDirection = 'ltr' | 'rtl';
 
 const PIN_OPTIONS: readonly DemoToggleOption<PinSide>[] = [
-  { value: 'left', label: 'Left' },
+  { value: 'start', label: 'Start' },
   { value: 'none', label: 'None' },
-  { value: 'right', label: 'Right' }
+  { value: 'end', label: 'End' }
 ];
 
 const DIRECTION_OPTIONS: readonly DemoToggleOption<TableDirection>[] = [
@@ -52,20 +52,20 @@ export class Pinning {
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({
     columnPinning: {
-      left: ['name'],
-      right: ['value']
+      start: ['name'],
+      end: ['value']
     }
   });
 
   protected getPinnedSide(id: string): PinSide {
     const pinning = this.tableState().columnPinning;
 
-    if (pinning?.left?.includes(id)) {
-      return 'left';
+    if (pinning?.start.includes(id)) {
+      return 'start';
     }
 
-    if (pinning?.right?.includes(id)) {
-      return 'right';
+    if (pinning?.end.includes(id)) {
+      return 'end';
     }
 
     return 'none';
@@ -73,19 +73,19 @@ export class Pinning {
 
   protected pinColumn(id: string, side: PinSide): void {
     this.tableState.update((current) => {
-      const pinning = current.columnPinning ?? { left: [], right: [] };
-      const left = (pinning.left ?? []).filter((entry) => entry !== id);
-      const right = (pinning.right ?? []).filter((entry) => entry !== id);
+      const pinning = current.columnPinning ?? { start: [], end: [] };
+      const start = pinning.start.filter((entry) => entry !== id);
+      const end = pinning.end.filter((entry) => entry !== id);
 
-      if (side === 'left') {
-        left.push(id);
-      } else if (side === 'right') {
-        right.push(id);
+      if (side === 'start') {
+        start.push(id);
+      } else if (side === 'end') {
+        end.push(id);
       }
 
       return {
         ...current,
-        columnPinning: { left, right }
+        columnPinning: { start, end }
       };
     });
   }

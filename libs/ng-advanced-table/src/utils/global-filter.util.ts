@@ -1,6 +1,7 @@
-import type { FilterFn, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { matchesFilterQuery } from './row-state.util';
+import type { FilterFn } from '../common/table-features.type';
 
 // One-entry memos for TanStack's per-column calls: the query and the row-id
 // match. Object filter values are not memoized since they can be mutated.

@@ -2,8 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import type { Cell } from '@tanstack/angular-table';
-
+import type { Cell } from '../common/table-features.type';
 import type { Row } from '../test-helpers/table-data.helper';
 import { TableHost, createTableHostFixture, getInternalStore } from '../test-helpers/table-hosts.helper';
 
@@ -35,7 +34,7 @@ describe('FEATURE: TanStack cell identity across table state changes', () => {
       it('THEN: it keeps the column order, pinning, and every row cell by reference', async () => {
         const store = getInternalStore(fixture);
         const leafColumnsBefore = store.table.getAllLeafColumns();
-        const pinningBefore = store.table.getState().columnPinning;
+        const pinningBefore = store.table.atoms.columnPinning.get();
         const cellsBefore = getVisibleCellsById(fixture);
 
         store.table.setSorting([{ id: 'name', desc: false }]);
@@ -43,9 +42,9 @@ describe('FEATURE: TanStack cell identity across table state changes', () => {
 
         const cellsAfter = getVisibleCellsById(fixture);
 
-        expect(store.table.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
+        expect(store.table.atoms.sorting.get()).toStrictEqual([{ id: 'name', desc: false }]);
         expect(store.table.getAllLeafColumns()).toBe(leafColumnsBefore);
-        expect(store.table.getState().columnPinning).toBe(pinningBefore);
+        expect(store.table.atoms.columnPinning.get()).toBe(pinningBefore);
         expect(cellsAfter.size).toBe(cellsBefore.size);
 
         for (const [rowId, cells] of cellsAfter) {
@@ -63,7 +62,7 @@ describe('FEATURE: TanStack cell identity across table state changes', () => {
         store.table.setRowSelection({ [firstRowId]: true });
         await fixture.whenStable();
 
-        expect(store.table.getState().rowSelection).toStrictEqual({ [firstRowId]: true });
+        expect(store.table.atoms.rowSelection.get()).toStrictEqual({ [firstRowId]: true });
 
         for (const [rowId, cells] of getVisibleCellsById(fixture)) {
           expect(cells).toBe(cellsBefore.get(rowId));
@@ -76,12 +75,12 @@ describe('FEATURE: TanStack cell identity across table state changes', () => {
         const store = getInternalStore(fixture);
         const cellsBefore = getVisibleCellsById(fixture);
 
-        store.table.setColumnPinning({ left: ['region'], right: [] });
+        store.table.setColumnPinning({ start: ['region'], end: [] });
         await fixture.whenStable();
 
         const [rowId, cellsAfter] = [...getVisibleCellsById(fixture)][0];
 
-        expect(store.table.getState().columnPinning).toStrictEqual({ left: ['region'], right: [] });
+        expect(store.table.atoms.columnPinning.get()).toStrictEqual({ start: ['region'], end: [] });
         expect(cellsAfter).not.toBe(cellsBefore.get(rowId));
         expect(cellsAfter[0].column.id).toBe('region');
       });
@@ -99,7 +98,7 @@ describe('FEATURE: TanStack cell identity across table state changes', () => {
         const store = getInternalStore(fixture);
         const cellsAfter = getVisibleCellsById(fixture);
 
-        expect(store.table.getState().sorting).toStrictEqual([{ id: 'region', desc: true }]);
+        expect(store.table.atoms.sorting.get()).toStrictEqual([{ id: 'region', desc: true }]);
 
         for (const [rowId, cells] of cellsAfter) {
           expect(cells).toBe(cellsBefore.get(rowId));

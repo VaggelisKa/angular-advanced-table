@@ -1,8 +1,9 @@
-import type { ColumnDefBase, Row, RowData, RowModel, SortingFn, SortingState, Table } from '@tanstack/angular-table';
-import { getMemoOptions, getSortedRowModel, memo } from '@tanstack/angular-table';
+import type { RowData, SortingState } from '@tanstack/angular-table';
+import { createSortedRowModel, tableMemo } from '@tanstack/angular-table';
 
 import { resolveKeyedSortingFn } from './sort-key.util';
 import { lazyByIndex, readValues } from './sort-values.util';
+import type { ColumnDefBase, NatTableFeatures, Row, RowModel, SortingFn, Table } from '../common/table-features.type';
 
 /**
  * A resolved sort entry for one column. Secondary values and keys are read
@@ -58,7 +59,7 @@ const resolveSortEntries = <TData extends RowData>(
       continue;
     }
 
-    const sortingFn = column.getSortingFn();
+    const sortingFn = column.getSortFn();
     const keyed = resolveKeyedSortingFn(sortingFn);
 
     entries.push({
@@ -77,8 +78,9 @@ const resolveSortEntries = <TData extends RowData>(
 
 /**
  * TanStack's `sortUndefined` handling when either value is undefined: a
- * placement that bypasses direction (`'first'`/`'last'`), a directional order
- * (`1`/`-1`), or `null` to compare the values normally.
+ * placement that bypasses direction (`'first'`/`'last'`, or a tie when both
+ * are undefined), a directional order (`1`/`-1`), or `null` to compare the
+ * values normally.
  */
 const compareUndefined = (
   sortUndefined: ColumnDefBase<RowData>['sortUndefined'],
@@ -89,12 +91,14 @@ const compareUndefined = (
     return null;
   }
 
-  if (sortUndefined === 'first' || sortUndefined === 'last') {
-    return { order: aUndefined === (sortUndefined === 'first') ? -1 : 1, placement: true };
+  // Both undefined: a tie on this entry, so the next sort entry decides. v9
+  // skips the entry here; v8 still applied `'first'`/`'last'` to the pair.
+  if (aUndefined && bUndefined) {
+    return { order: 0, placement: true };
   }
 
-  if (aUndefined && bUndefined) {
-    return null;
+  if (sortUndefined === 'first' || sortUndefined === 'last') {
+    return { order: aUndefined === (sortUndefined === 'first') ? -1 : 1, placement: true };
   }
 
   return { order: aUndefined ? sortUndefined : -sortUndefined, placement: false };
@@ -175,9 +179,18 @@ const sortFlatRows = <TData extends RowData>(
 export const natGetSortedRowModel =
   <TData extends RowData>(): ((table: Table<TData>) => () => RowModel<TData>) =>
   (table) =>
-    memo(
-      () => [table.getState().sorting, table.getPreSortedRowModel()],
-      (sorting: SortingState, rowModel: RowModel<TData>) => {
+    tableMemo({
+      feature: 'rowSortingFeature',
+      // `tableMemo`'s `table` option does not accept a table typed with a
+      // generic TData (TanStack's options types are invariant in it); the
+      // memo only uses it for debug naming and the reactivity hooks.
+      table: table as never,
+      fnName: 'table.getSortedRowModel',
+      memoDeps: () => [table.atoms.sorting.get(), table.getPreSortedRowModel()],
+      fn: () => {
+        const sorting = table.atoms.sorting.get();
+        const rowModel = table.getPreSortedRowModel();
+
         if (!rowModel.rows.length || !sorting.length) {
           return rowModel;
         }
@@ -186,11 +199,12 @@ export const natGetSortedRowModel =
           // A fresh TanStack model per recompute: a long-lived one keeps its own
           // memo, which misses dependency changes made while this one short-
           // circuited (cleared sorting) and would serve stale rows.
-          return getSortedRowModel<TData>()(table)();
+          return createSortedRowModel<NatTableFeatures, TData>()(table)();
         }
 
         return sortFlatRows(table, sorting, rowModel);
-      },
-      // eslint-disable-next-line no-underscore-dangle -- TanStack's own page-index reset hook, called exactly as its sorted row model does.
-      getMemoOptions(table.options, 'debugTable', 'getSortedRowModel', () => table._autoResetPageIndex())
-    );
+      }
+      // No page-index reset hook: the library sets `autoResetPageIndex: false`
+      // and owns pagination resets itself, so v8's `_autoResetPageIndex()` call
+      // was a no-op here and v9 does not export its replacement.
+    });

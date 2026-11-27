@@ -1,7 +1,8 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
-import type { Column, Header, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { Column, Header } from '../common/table-features.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { canResizeColumn } from '../utils/interaction.util';
@@ -55,7 +56,7 @@ export class NatTableResizeService<TData extends RowData = RowData> {
 
   /** Full-height drag guide position: column edge + live drag delta, or null when idle. */
   public readonly columnResizeGuide = computed<{ readonly left: number; readonly offset: number } | null>(() => {
-    const info = this.state.table.getState().columnSizingInfo;
+    const info = this.state.table.atoms.columnResizing.get();
     const origin = this.resizeGuideOrigin();
     const resizingId = info.isResizingColumn;
 
@@ -82,7 +83,7 @@ export class NatTableResizeService<TData extends RowData = RowData> {
   });
 
   /** True while a pointer/touch column-resize drag is in progress. */
-  public readonly isColumnResizing = computed(() => this.state.table.getState().columnSizingInfo.isResizingColumn !== false);
+  public readonly isColumnResizing = computed(() => this.state.table.atoms.columnResizing.get().isResizingColumn !== false);
 
   /**
    * Start a pointer/touch column resize.

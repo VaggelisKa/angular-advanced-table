@@ -5,9 +5,10 @@ import type {
   ColumnSizingState,
   PaginationState,
   RowSelectionState,
-  SortingState,
-  VisibilityState
+  SortingState
 } from '@tanstack/angular-table';
+
+import type { VisibilityState } from './table-features.type';
 
 /**
  * Serializable view state of a table. `NatTableSurface` binds it through
@@ -27,7 +28,7 @@ export type NatTableUserState = {
   readonly columnVisibility: VisibilityState;
   /** Leaf-column order, restored when columns are unpinned. */
   readonly columnOrder: ColumnOrderState;
-  /** Left and right pinned column ids. */
+  /** Pinned column ids in the logical `start` and `end` zones (left and right in a left-to-right table). */
   readonly columnPinning: ColumnPinningState;
   /** Per-column pixel widths keyed by column id, set by interactive resizing. */
   readonly columnSizing: ColumnSizingState;

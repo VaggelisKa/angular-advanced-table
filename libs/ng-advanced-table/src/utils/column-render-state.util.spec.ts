@@ -1,10 +1,10 @@
 /* eslint-disable max-lines -- exhaustive branch coverage for buildColumnRenderState */
-import type { Column } from '@tanstack/angular-table';
 
 import { buildColumnRenderState } from './column-render-state.util';
 import { DEFAULT_CELL_MAX_LINES } from '../common/column-meta.const';
 import type { NatTableColumnMeta } from '../common/column-meta.type';
 import type { ColumnRenderStateContext, TableColumnSizingState } from '../common/column-render.type';
+import type { Column } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 
 /** Minimal row shape used to satisfy the `Column<TData, unknown>` generic in stubs. */
@@ -41,7 +41,7 @@ const createState = (overrides: Partial<NatTableUserState> = {}): NatTableUserSt
   pagination: { pageIndex: 0, pageSize: 10 },
   columnVisibility: {},
   columnOrder: [],
-  columnPinning: { left: [], right: [] },
+  columnPinning: { start: [], end: [] },
   columnSizing: {},
   rowSelection: {},
   ...overrides
