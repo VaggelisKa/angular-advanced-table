@@ -151,58 +151,27 @@ export class TestTableSurface {
 
   private readonly natTableService = inject(NatTableService);
 
-  // eslint-disable-next-line max-lines-per-function -- test host wires many state-sync effects for integration specs
   public constructor() {
     effect(() => {
-      this.natTableService.setState(this.state());
-    });
-    effect(() => {
-      this.natTableService.surfaceInitialState.set(this.initialState());
-    });
-    effect(() => {
-      this.natTableService.surfaceMode.set(this.mode());
-    });
-    effect(() => {
-      this.natTableService.manualPageCount.set(this.manualPageCount());
-    });
-    effect(() => {
-      this.natTableService.enableAnnouncements.set(this.enableAnnouncements());
-    });
-    effect(() => {
-      this.natTableService.stickyHeader.set(this.stickyHeader());
-    });
-    effect(() => {
-      this.natTableService.enableMultiSort.set(this.enableMultiSort());
-    });
-    effect(() => {
-      this.natTableService.locale.set(this.locale());
-    });
-    effect(() => {
-      this.natTableService.accessibilityText.set(this.accessibilityText());
-    });
-    effect(() => {
-      this.natTableService.surfaceKeybindings.set(this.keybindings());
-    });
-    effect(() => {
-      this.natTableService.columnResizeMode.set(this.columnResizeMode());
-    });
-    effect(() => {
-      this.natTableService.columnSizingMode.set(this.columnSizingMode());
-    });
-    effect(() => {
-      this.natTableService.enableColumnResizing.set(this.enableColumnResizing());
-    });
-    effect(() => {
-      this.natTableService.enableReordering.set(this.enableReordering());
-    });
-    effect(() => {
-      this.natTableService.enableSorting.set(this.enableSorting());
-    });
-    effect(() => {
-      this.natTableService.enablePinning.set(this.enablePinning());
-    });
-    effect(() => {
-      this.natTableService.direction.set(this.direction());
+      this.natTableService.configure({
+        state: this.state(),
+        initialState: this.initialState(),
+        mode: this.mode(),
+        manualPageCount: this.manualPageCount(),
+        enableAnnouncements: this.enableAnnouncements(),
+        stickyHeader: this.stickyHeader(),
+        enableMultiSort: this.enableMultiSort(),
+        locale: this.locale(),
+        accessibilityText: this.accessibilityText(),
+        keybindings: this.keybindings(),
+        columnResizeMode: this.columnResizeMode(),
+        columnSizingMode: this.columnSizingMode(),
+        enableColumnResizing: this.enableColumnResizing(),
+        enableReordering: this.enableReordering(),
+        enableSorting: this.enableSorting(),
+        enablePinning: this.enablePinning(),
+        direction: this.direction()
+      });
     });
 
     let isFirstChange = true;
@@ -219,14 +188,14 @@ export class TestTableSurface {
     };
 
     effect(() => {
-      const nextState = this.natTableService.stateChangeEvent();
+      const nextState = this.natTableService.stateChanges();
 
       if (!nextState) {
         return;
       }
 
       if (isFirstChange) {
-        previousState = seedPreviousState(this.state(), this.natTableService.surfaceInitialState());
+        previousState = seedPreviousState(this.state(), this.natTableService.initialState());
         isFirstChange = false;
       }
 

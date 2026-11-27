@@ -49,13 +49,13 @@ describe('FEATURE: NatTableService', () => {
     });
   });
 
-  describe('GIVEN: a surface patching configuration onto the service', () => {
-    describe('WHEN: the patch omits a defined-only scalar option', () => {
+  describe('GIVEN: a surface configuring the service', () => {
+    describe('WHEN: the configuration omits a defined-only scalar option', () => {
       it('THEN: it keeps the current value rather than resetting it to a default', () => {
         const service = createService();
 
-        service.patchState({ stickyHeader: false, enableSorting: true });
-        service.patchState({ enableMultiSort: true });
+        service.configure({ stickyHeader: false, enableSorting: true });
+        service.configure({ enableMultiSort: true });
 
         expect(service.stickyHeader()).toBe(false);
         expect(service.enableSorting()).toBe(true);
@@ -63,17 +63,17 @@ describe('FEATURE: NatTableService', () => {
       });
     });
 
-    describe('WHEN: the patch carries undefined for a pass-through option', () => {
+    describe('WHEN: the configuration carries undefined for a pass-through option', () => {
       it('THEN: it applies undefined, because those options treat it as a real value', () => {
         const service = createService();
 
-        service.patchState({ manualPageCount: 5, locale: 'de-DE', direction: 'rtl' });
+        service.configure({ manualPageCount: 5, locale: 'de-DE', direction: 'rtl' });
 
         expect(service.manualPageCount()).toBe(5);
         expect(service.locale()).toBe('de-DE');
         expect(service.direction()).toBe('rtl');
 
-        service.patchState({ manualPageCount: undefined, locale: undefined, direction: undefined });
+        service.configure({ manualPageCount: undefined, locale: undefined, direction: undefined });
 
         expect(service.manualPageCount()).toBeUndefined();
         expect(service.locale()).toBeUndefined();
@@ -81,49 +81,49 @@ describe('FEATURE: NatTableService', () => {
       });
     });
 
-    describe('WHEN: the patch repeats a structurally equal accessibility text object', () => {
+    describe('WHEN: the configuration repeats a structurally equal accessibility text object', () => {
       it('THEN: it keeps the stored reference so downstream computeds do not recompute', () => {
         const service = createService();
 
-        service.patchState({ accessibilityText: { description: 'Orders table' } });
+        service.configure({ accessibilityText: { description: 'Orders table' } });
 
         const stored = service.accessibilityText();
 
-        service.patchState({ accessibilityText: { description: 'Orders table' } });
+        service.configure({ accessibilityText: { description: 'Orders table' } });
 
         expect(service.accessibilityText()).toBe(stored);
 
-        service.patchState({ accessibilityText: { description: 'Orders grid' } });
+        service.configure({ accessibilityText: { description: 'Orders grid' } });
 
         expect(service.accessibilityText()).not.toBe(stored);
       });
     });
 
-    describe('WHEN: the patch repeats a structurally equal keybindings object', () => {
+    describe('WHEN: the configuration repeats a structurally equal keybindings object', () => {
       it('THEN: it keeps the stored reference so the keyboard map is not rebuilt', () => {
         const service = createService();
 
-        service.patchState({ keybindings: { rowActivate: ['Enter'] } });
+        service.configure({ keybindings: { rowActivate: ['Enter'] } });
 
         const stored = service.surfaceKeybindings();
 
-        service.patchState({ keybindings: { rowActivate: ['Enter'] } });
+        service.configure({ keybindings: { rowActivate: ['Enter'] } });
 
         expect(service.surfaceKeybindings()).toBe(stored);
       });
     });
 
-    describe('WHEN: the patch carries state and initial state', () => {
+    describe('WHEN: the configuration carries state and initial state', () => {
       it('THEN: it stores both slices as given', () => {
         const service = createService();
 
-        service.patchState({
+        service.configure({
           state: { pagination: { pageIndex: 2, pageSize: 10 } },
           initialState: { pagination: { pageIndex: 0, pageSize: 10 } }
         });
 
-        expect(service.state().pagination?.pageIndex).toBe(2);
-        expect(service.surfaceInitialState().pagination?.pageIndex).toBe(0);
+        expect(service.controlledState().pagination?.pageIndex).toBe(2);
+        expect(service.initialState().pagination?.pageIndex).toBe(0);
       });
     });
   });
@@ -133,7 +133,7 @@ describe('FEATURE: NatTableService', () => {
       it('THEN: it reports pagination, sorting, and filtering as manual together', () => {
         const service = createService();
 
-        service.patchState({ mode: 'manual' });
+        service.configure({ mode: 'manual' });
 
         expect([service.manualPagination(), service.manualSorting(), service.manualFiltering()]).toStrictEqual([true, true, true]);
       });
@@ -143,7 +143,7 @@ describe('FEATURE: NatTableService', () => {
       it('THEN: it reports none of them as manual', () => {
         const service = createService();
 
-        service.patchState({ mode: 'auto' });
+        service.configure({ mode: 'auto' });
 
         expect([service.manualPagination(), service.manualSorting(), service.manualFiltering()]).toStrictEqual([false, false, false]);
       });
@@ -153,7 +153,7 @@ describe('FEATURE: NatTableService', () => {
       it('THEN: it reports manual only for the concerns configured as manual', () => {
         const service = createService();
 
-        service.patchState({ mode: { pagination: 'manual', sorting: 'auto', filtering: 'manual' } });
+        service.configure({ mode: { pagination: 'manual', sorting: 'auto', filtering: 'manual' } });
 
         expect([service.manualPagination(), service.manualSorting(), service.manualFiltering()]).toStrictEqual([true, false, true]);
       });
@@ -212,30 +212,66 @@ describe('FEATURE: NatTableService', () => {
     });
   });
 
-  describe('GIVEN: a table emitting state back to its surface', () => {
-    describe('WHEN: the table notifies a state change', () => {
-      it('THEN: it exposes the emitted state to the surface', () => {
+  describe('GIVEN: renderers seeding and committing the central state', () => {
+    describe('WHEN: the state is seeded twice', () => {
+      it('THEN: it seeds from the initial state once and keeps later commits on the second call', () => {
         const service = createService();
 
-        expect(service.stateChangeEvent()).toBeNull();
+        service.configure({ initialState: { globalFilter: 'seed', pagination: { pageIndex: 1, pageSize: 25 } } });
 
-        service.notifyStateChange({ pagination: { pageIndex: 1, pageSize: 25 } } as never);
+        expect(service.seedState()).toBe(true);
+        expect(service.hasSeededState()).toBe(true);
+        expect(service.state().globalFilter).toBe('seed');
+        expect(service.state().pagination).toStrictEqual({ pageIndex: 1, pageSize: 25 });
 
-        expect(service.stateChangeEvent()?.pagination.pageIndex).toBe(1);
+        service.commitState({ ...service.state(), globalFilter: 'typed' });
+
+        expect(service.seedState()).toBe(false);
+        expect(service.state().globalFilter).toBe('typed');
       });
     });
 
-    describe('WHEN: state is replaced and then updated from its current value', () => {
-      it('THEN: it applies the replacement and then the updater in order', () => {
+    describe('WHEN: a renderer commits a state with one slice controlled', () => {
+      it('THEN: it stores the uncontrolled slices and reports the proposed controlled slice without applying it', () => {
         const service = createService();
 
-        service.setState({ globalFilter: 'alpha' });
+        service.configure({ state: { globalFilter: 'bound' } });
+        service.seedState();
 
-        expect(service.state().globalFilter).toBe('alpha');
+        expect(service.stateChanges()).toBeNull();
 
-        service.updateState((current) => ({ ...current, globalFilter: `${current.globalFilter as string}-beta` }));
+        service.commitState({ ...service.state(), globalFilter: 'proposed', pagination: { pageIndex: 3, pageSize: 10 } });
 
-        expect(service.state().globalFilter).toBe('alpha-beta');
+        expect(service.state().globalFilter).toBe('bound');
+        expect(service.state().pagination.pageIndex).toBe(3);
+        expect(service.stateChanges()?.globalFilter).toBe('proposed');
+      });
+    });
+
+    describe('WHEN: a renderer seeds with a report of its resolved state', () => {
+      it('THEN: it exposes the report through stateChanges without storing it', () => {
+        const service = createService();
+
+        service.seedState(() => ({ ...service.state(), columnOrder: ['a', 'b'] }));
+
+        expect(service.stateChanges()?.columnOrder).toStrictEqual(['a', 'b']);
+        expect(service.state().columnOrder).toStrictEqual([]);
+      });
+    });
+
+    describe('WHEN: the binding stops controlling a slice', () => {
+      it('THEN: it falls back to the state the service owns for that slice', () => {
+        const service = createService();
+
+        service.seedState();
+        service.commitState({ ...service.state(), globalFilter: 'owned' });
+        service.configure({ state: { globalFilter: 'bound' } });
+
+        expect(service.state().globalFilter).toBe('bound');
+
+        service.configure({ state: {} });
+
+        expect(service.state().globalFilter).toBe('owned');
       });
     });
   });
@@ -252,7 +288,7 @@ describe('FEATURE: NatTableService', () => {
 
         const service = TestBed.inject(NatTableService);
 
-        service.patchState({ keybindings: { rowActivate: ['F2'] } });
+        service.configure({ keybindings: { rowActivate: ['F2'] } });
 
         expect(service.keybindings().rowActivate).toStrictEqual(['F2']);
         expect(service.keybindings().cellExitControl).toBe('Escape');

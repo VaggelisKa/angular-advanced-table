@@ -6,7 +6,7 @@ Use the list when a grid stops earning its columns:
 
 - Narrow viewports where a table would scroll horizontally — pair it with a consumer-owned breakpoint to swap renderers.
 - Card-like records where each row reads better as a labeled block than as a row of cells.
-- Renderer swaps inside one `nat-table-surface`, because the surface state (sorting, column order, visibility, selection, pagination) survives the swap.
+- Renderer swaps inside one `nat-table-surface` (or one host-provided `NatTableService`), because the state (sorting, column order, visibility, selection, pagination) lives in the service, not in the renderer, and survives the swap.
 
 The list deliberately ships no header UI, resizing, pinning, or reorder affordances. Sorting and field order are consumer-owned: write the surface state instead.
 

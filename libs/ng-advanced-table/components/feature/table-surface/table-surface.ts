@@ -87,31 +87,22 @@ export class NatTableSurface {
 
   private readonly natTableService = inject(NatTableService);
 
-  private previousTableState: NatTableUserState = {
-    sorting: [],
-    globalFilter: '',
-    columnFilters: [],
-    columnVisibility: {},
-    columnOrder: [],
-    columnPinning: { start: [], end: [] },
-    columnSizing: {},
-    rowSelection: {},
-    pagination: { pageIndex: 0, pageSize: 0 }
-  };
-
-  private firstStateChange = true;
+  /** Last state seen from the service; `null` until the first (seed) report, which only sets the baseline. */
+  private previousTableState: NatTableUserState | null = null;
 
   public constructor() {
+    // State manager → initiator: committed state becomes `[(state)]` and the slice outputs.
     effect(() => {
-      const nextState = this.natTableService.stateChangeEvent();
+      const nextState = this.natTableService.stateChanges();
 
       if (nextState) {
         this.emitStateSliceChanges(nextState);
       }
     });
 
+    // Initiator → state manager: every input goes into the service in one call.
     effect(() => {
-      this.natTableService.patchState({
+      this.natTableService.configure({
         state: this.state(),
         initialState: this.initialState(),
         mode: this.mode(),
@@ -135,12 +126,7 @@ export class NatTableSurface {
 
   /** Diff incoming table state against the previous and emit each changed slice. */
   private emitStateSliceChanges(nextState: NatTableUserState): void {
-    if (this.firstStateChange) {
-      this.previousTableState = nextState;
-      this.firstStateChange = false;
-    }
-
-    const prev = this.previousTableState;
+    const prev = this.previousTableState ?? nextState;
 
     this.previousTableState = nextState;
 
