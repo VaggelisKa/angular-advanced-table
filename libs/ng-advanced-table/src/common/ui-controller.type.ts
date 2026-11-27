@@ -10,6 +10,12 @@ import type { NatTableUiState } from './table-state.type';
  */
 export type NatTableUiController<TData extends RowData = RowData> = {
   readonly table: Table<TData>;
+  /**
+   * Applies pending state to `table` now. A companion that writes state from an
+   * effect calls it before reading `table.atoms`, since the renderer otherwise
+   * applies changes only in its own change-detection pass.
+   */
+  flushTableOptions?(): void;
   enableGlobalFilter(): boolean;
   enablePagination(): boolean;
   patchState(

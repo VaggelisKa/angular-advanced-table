@@ -259,6 +259,7 @@ describe('FEATURE: TanStack v9 codemod — column pinning', () => {
         ['an empty pinning literal', `const s = { columnPinning: {} };`],
         ['a pinning slice set from a variable', `const s = { columnPinning: next };`],
         ['already migrated keys', `const s = { columnPinning: { start: ['a'], end: [] } };`],
+        ['a columnPinning option object with no zones', `const s = { columnPinning: { enabled: true } };`],
         ['a fallback for another slice', `const v = state.columnVisibility ?? { left: true };`]
       ];
 
@@ -275,7 +276,10 @@ describe('FEATURE: TanStack v9 codemod — column pinning', () => {
         ['an optional read', `const a = this.state().columnPinning?.right;`, `const a = this.state().columnPinning?.end;`],
         ['an optional chain on the zone', `state.columnPinning?.left?.includes(id);`, `state.columnPinning?.start?.includes(id);`],
         ['a variable named pinning', `const a = pinning.left ?? [];`, `const a = pinning.start ?? [];`],
-        ['a variable ending in Pinning', `const a = nextPinning.right;`, `const a = nextPinning.end;`]
+        ['a variable ending in Pinning', `const a = nextPinning.right;`, `const a = nextPinning.end;`],
+        ['a signal call', `const a = this.columnPinning().left;`, `const a = this.columnPinning().start;`],
+        ['a non-null assertion', `const a = state.columnPinning!.right;`, `const a = state.columnPinning!.end;`],
+        ['a pinning field', `const a = this.pinning.left;`, `const a = this.pinning.start;`]
       ];
 
       for (const [name, input, expected] of cases) {
@@ -288,7 +292,9 @@ describe('FEATURE: TanStack v9 codemod — column pinning', () => {
         ['a DOMRect', `const x = rect.left;`],
         ['a style object', `el.style.right = '0';`],
         ['a padding object', `const p = padding.left;`],
-        ['a render state', `const offset = state()?.left;`]
+        ['a render state', `const offset = state()?.left;`],
+        ['an element style read', `const x = this.element.style.left;`],
+        ['a signal of something else', `const x = this.bounds().left;`]
       ];
 
       for (const [name, input] of cases) {
@@ -476,6 +482,12 @@ describe('FEATURE: TanStack v9 codemod — sorting and renamed APIs', () => {
         it(`THEN: it rewrites ${name}`, () => assertMigrates(`${tableImport}${input}`, `${tableImport}${expected}`));
       }
 
+      it('THEN: it also rewrites code inside the receiver in the same pass', () =>
+        assertMigrates(
+          `${tableImport}const s = getTable(column.getIsPinned() === 'left').getState().sorting;`,
+          `${tableImport}const s = getTable(column.getIsPinned() === 'start').atoms.sorting.get();`
+        ));
+
       it('THEN: it also rewrites in a file that imports a library entry point', () =>
         assertMigrates(
           `import { NatTableService } from 'ng-advanced-table/components';\nconst s = table.getState().sorting;`,
@@ -626,6 +638,43 @@ describe('FEATURE: TanStack v9 codemod — cell renderers', () => {
         ));
     });
 
+    describe('WHEN: a nested scope reuses the parameter name or the read is optional', () => {
+      const cases = [
+        [
+          'a nested function with its own parameter of that name',
+          `cell: (c: CellContext<R, number>) => c.getValue() + list.map((c) => c.getValue()).length`,
+          `cell: (c: CellContext<R, unknown>) => c.getValue<number>() + list.map((c) => c.getValue()).length`
+        ],
+        [
+          'a nested renderer typed on its own',
+          `cell: (c: CellContext<R, number>) => wrap(c.getValue(), (c: CellContext<R, string>) => c.getValue())`,
+          `cell: (c: CellContext<R, unknown>) => wrap(c.getValue<number>(), (c: CellContext<R, unknown>) => c.getValue<string>())`
+        ],
+        [
+          'a block that declares the name again',
+          `function cell(c: CellContext<R, number>) { if (x) { const c = other(); return c.getValue(); } return c.getValue(); }`,
+          `function cell(c: CellContext<R, unknown>) { if (x) { const c = other(); return c.getValue(); } return c.getValue<number>(); }`
+        ],
+        [
+          'a loop variable of that name',
+          `function cell(c: CellContext<R, number>) { for (const c of items) c.getValue(); return c.getValue(); }`,
+          `function cell(c: CellContext<R, unknown>) { for (const c of items) c.getValue(); return c.getValue<number>(); }`
+        ],
+        [
+          'an optional call',
+          `cell: (c: CellContext<R, number>) => c.getValue?.()`,
+          `cell: (c: CellContext<R, unknown>) => c.getValue?.<number>()`
+        ]
+      ];
+
+      for (const [name, input, expected] of cases) {
+        it(`THEN: it handles ${name}`, () => {
+          assertMigrates(input, expected);
+          assert.deepEqual(syntaxErrors(expected), []);
+        });
+      }
+    });
+
     describe('WHEN: the parameter is destructured', () => {
       it('THEN: it reports it without changing it', () => {
         const input = `cell: ({ getValue }: CellContext<Order, number>) => getValue()`;
@@ -679,6 +728,16 @@ describe('FEATURE: TanStack v9 codemod — imports', () => {
           'the v8-only names',
           `import type { SortingFn, VisibilityState } from '@tanstack/angular-table';`,
           `import type { SortingFn, VisibilityState } from 'ng-advanced-table';`
+        ],
+        [
+          'the column definition variants',
+          `import type { AccessorColumnDef, AccessorFnColumnDef, AccessorKeyColumnDef, DisplayColumnDef, GroupColumnDef, IdentifiedColumnDef } from '@tanstack/angular-table';`,
+          `import type { AccessorColumnDef, AccessorFnColumnDef, AccessorKeyColumnDef, DisplayColumnDef, GroupColumnDef, IdentifiedColumnDef } from 'ng-advanced-table';`
+        ],
+        [
+          'table options and state used with v8 arguments',
+          `import type { TableOptions, TableState } from '@tanstack/angular-table';\nlet o: TableOptions<Order>;\nlet s: TableState;`,
+          `import type { TableOptions, TableState } from 'ng-advanced-table';\nlet o: TableOptions<Order>;\nlet s: TableState;`
         ]
       ];
 
@@ -715,6 +774,18 @@ describe('FEATURE: TanStack v9 codemod — imports', () => {
           `import type { ColumnDef } from '@tanstack/angular-table';\nconst c: ColumnDef<F, Order, number>[] = [];`
         ],
         ['SortFn, which v8 did not export', `import type { SortFn } from '@tanstack/angular-table';`],
+        [
+          'TableState with a feature argument',
+          `import type { TableState } from '@tanstack/angular-table';\ntype S = TableState<typeof features>;`
+        ],
+        [
+          'TableOptions with two arguments',
+          `import type { TableOptions } from '@tanstack/angular-table';\ntype O = TableOptions<F, Order>;`
+        ],
+        [
+          'a column definition variant with three arguments',
+          `import type { DisplayColumnDef } from '@tanstack/angular-table';\nconst d: DisplayColumnDef<F, Order, unknown> = {};`
+        ],
         ['a state type', `import type { SortingState } from '@tanstack/angular-table';`],
         ['another package', `import type { ColumnDef } from '@tanstack/table-core';`],
         ['a side-effect import', `import '@tanstack/angular-table';`]
@@ -731,6 +802,9 @@ describe('FEATURE: TanStack v9 codemod — imports', () => {
 
       it('THEN: it reports the renamed sorting registry', () =>
         assert.match(reportMessages(`import { sortingFns } from '@tanstack/angular-table';`)[0], /`sortingFns` is `sortFns`/));
+
+      it('THEN: it reports the renamed sorting registry under an alias', () =>
+        assert.match(reportMessages(`import { sortingFns as fns } from '@tanstack/angular-table';`)[0], /`sortingFns` is `sortFns`/));
     });
   });
 });
@@ -752,12 +826,17 @@ describe('FEATURE: TanStack v9 codemod — manual-review reports', () => {
       const cases = [
         `const i = table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected();`,
         `const i = table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected();`,
-        `const i = !table.getIsAllRowsSelected() && table.getIsSomeRowsSelected();`
+        `const i = !table.getIsAllRowsSelected() && table.getIsSomeRowsSelected();`,
+        `const i = this.enabled() && table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected();`,
+        `const i = a && (table.getIsSomeRowsSelected() && b) && !table.getIsAllRowsSelected();`
       ];
 
       for (const input of cases) {
         it(`THEN: it does not report ${input.slice(10, 50)}…`, () => assert.deepEqual(reportMessages(input), []));
       }
+
+      it('THEN: it still reports a check paired with something else in an || chain', () =>
+        assert.equal(reportMessages(`const i = table.getIsSomeRowsSelected() || !table.getIsAllRowsSelected();`).length, 1));
     });
   });
 
@@ -794,6 +873,51 @@ describe('FEATURE: TanStack v9 codemod — manual-review reports', () => {
 
       it('THEN: it covers the flexRenderCell and flexRenderHeader variants', () =>
         assert.equal(migrateHtml(`<ng-container *flexRenderCell="c; props: make(c)"></ng-container>`).length, 1));
+
+      const calls = [
+        ['a single-quoted attribute', `<ng-container *flexRender='a(); props: build(); let r'></ng-container>`],
+        ['an optional-chained receiver', `<ng-container *flexRender="a(); props: helper?.build(row)"></ng-container>`],
+        ['an optional call', `<ng-container *flexRender="a(); props: build?.()"></ng-container>`]
+      ];
+
+      for (const [name, html] of calls) {
+        it(`THEN: it reports ${name}`, () => assert.equal(migrateHtml(html).length, 1));
+      }
+
+      it('THEN: it reports the column where the binding starts in HTML', () =>
+        assert.deepEqual(
+          migrateHtml(`<div>\n    <ng-container *flexRender="a(); props: b()"></ng-container>\n</div>`).map(({ line, column }) => ({
+            line,
+            column
+          })),
+          [{ line: 2, column: 19 }]
+        ));
+
+      it('THEN: it points at the binding in an inline template with CRLF line ends', () => {
+        const source = [
+          '@Component({',
+          '  template: `',
+          '    <p>x</p>',
+          '    <ng-container *flexRender="a(); props: ctx()"></ng-container>',
+          '  `',
+          '})',
+          'class A {}'
+        ].join('\r\n');
+        const { reports } = migrate(source);
+
+        assert.deepEqual(
+          reports.map(({ line, column }) => ({ line, column })),
+          [{ line: 4, column: 19 }]
+        );
+      });
+
+      it('THEN: it points at the binding in an inline string template with escapes', () => {
+        const source = `@Component({ template: "<b>\\u0041\\"</b>\\n<ng-container *flexRender=\\"a(); props: ctx()\\"></ng-container>" })\nclass A {}`;
+        const { reports } = migrate(source);
+
+        assert.equal(reports.length, 1);
+        assert.equal(source.slice(reports[0].column - 1, reports[0].column - 1 + '*flexRender'.length), '*flexRender');
+      });
     });
 
     describe('WHEN: props are already stable', () => {
@@ -804,7 +928,11 @@ describe('FEATURE: TanStack v9 codemod — manual-review reports', () => {
           'TanStack header context',
           `<ng-container *flexRender="header.column.columnDef.header; props: header.getContext()"></ng-container>`
         ],
-        ['no props at all', `<ng-container *flexRender="a(); let r"></ng-container>`]
+        ['no props at all', `<ng-container *flexRender="a(); let r"></ng-container>`],
+        [
+          'optional-chained TanStack context',
+          `<ng-container *flexRender="cell.column.columnDef.cell; props: cell?.getContext()"></ng-container>`
+        ]
       ];
 
       for (const [name, html] of cases) {
@@ -883,7 +1011,7 @@ describe('FEATURE: TanStack v9 codemod — whole files', () => {
         `const p = current.columnPinning ?? { left: [], right: [] };`,
         `column.pin(column.getIsPinned() === 'left' ? false : 'right');`,
         `const c = { accessorKey: 'name', sortingFn };`,
-        `const i = table.getState().columnSizingInfo.isResizingColumn;`,
+        `import { injectTable } from '@tanstack/angular-table';\nconst i = table.getState().columnSizingInfo.isResizingColumn;`,
         `const columns = [{ cell: (c: CellContext<R, Date | null>) => c.getValue()?.toISOString() }];`,
         `import { createColumnHelper, type Row } from '@tanstack/angular-table';`
       ];
@@ -892,6 +1020,7 @@ describe('FEATURE: TanStack v9 codemod — whole files', () => {
         it(`THEN: it stays valid and idempotent for ${snippet.slice(0, 48)}…`, () => {
           const once = migrate(snippet).output;
 
+          assert.notEqual(once, snippet, 'the snippet should exercise at least one rule');
           assert.deepEqual(syntaxErrors(once), []);
           assertUnchanged(once);
         });
@@ -963,6 +1092,67 @@ describe('FEATURE: TanStack v9 codemod — command line', () => {
       });
     });
 
+    describe('WHEN: a file uses the table API without importing the library', () => {
+      it('THEN: it still migrates it', () => {
+        const source = [
+          `export const toggle = (column: Col) => column.pin(column.getIsPinned() === 'left' ? false : 'left');`,
+          `export const width = (table: T) => table.getLeftTotalSize();`,
+          `export const ids = (pinning: P) => pinning.right;`,
+          `export const some = (table: T) => table.getIsSomeRowsSelected();`,
+          ''
+        ].join('\n');
+        const root = createProject({ 'src/helpers.ts': source });
+        const result = run([], root, quiet);
+
+        assert.equal(
+          readFileSync(join(root, 'src/helpers.ts'), 'utf8'),
+          [
+            `export const toggle = (column: Col) => column.pin(column.getIsPinned() === 'start' ? false : 'start');`,
+            `export const width = (table: T) => table.getStartTotalSize();`,
+            `export const ids = (pinning: P) => pinning.end;`,
+            `export const some = (table: T) => table.getIsSomeRowsSelected();`,
+            ''
+          ].join('\n')
+        );
+        assert.deepEqual(
+          result.manual.map(({ file, line }) => `${file}:${line}`),
+          ['src/helpers.ts:4']
+        );
+      });
+    });
+
+    describe('WHEN: the source tree holds symlinks', () => {
+      it('THEN: it skips them, so dangling, cyclic, and outside links are never read or written', () => {
+        const pinning = `export const s = { columnPinning: { left: ['a'] } };\n`;
+        const outside = createProject({ 'shared/state.ts': pinning });
+        const root = createProject({ 'src/real.ts': pinning });
+
+        symlinkSync(join(root, 'src/missing.ts'), join(root, 'src/dangling.ts'));
+        symlinkSync(join(root, 'src'), join(root, 'src/loop'), 'dir');
+        symlinkSync(join(outside, 'shared/state.ts'), join(root, 'src/outside.ts'));
+        symlinkSync(join(outside, 'shared'), join(root, 'src/shared'), 'dir');
+
+        const result = run([], root, quiet);
+
+        assert.equal(result.changedFiles, 1);
+        assert.equal(
+          readFileSync(join(root, 'src/real.ts'), 'utf8'),
+          `export const s = { columnPinning: { start: ['a'], end: [] } };\n`
+        );
+        assert.equal(readFileSync(join(outside, 'shared/state.ts'), 'utf8'), pinning);
+      });
+    });
+
+    describe('WHEN: it is given an option it does not know', () => {
+      it('THEN: it throws before reading any file', () => {
+        const source = `export const s = { columnPinning: { left: ['id'] } };\n`;
+        const root = createProject({ 'src/state.ts': source });
+
+        assert.throws(() => run(['--dryrun', 'src'], root, quiet), /Unknown option: --dryrun/);
+        assert.equal(readFileSync(join(root, 'src/state.ts'), 'utf8'), source);
+      });
+    });
+
     describe('WHEN: some code needs a manual look', () => {
       it('THEN: it lists each item with its relative path and position', () => {
         const root = createProject({
@@ -996,6 +1186,35 @@ describe('FEATURE: TanStack v9 codemod — command line', () => {
         assert.equal(result.status, 0, result.stderr);
         assert.match(result.stdout, /Dry run: 2 edits in 1 of 1 files\./);
       });
+    });
+
+    describe('WHEN: it is asked for help', () => {
+      for (const flag of ['--help', '-h']) {
+        it(`THEN: it prints the usage for ${flag}, exits 0, and changes nothing`, () => {
+          const source = `export const s = { columnPinning: { left: ['id'] } };\n`;
+          const root = createProject({ 'src/state.ts': source });
+          const result = spawnSync(process.execPath, [script, flag], { cwd: root, encoding: 'utf8' });
+
+          assert.equal(result.status, 0, result.stderr);
+          assert.match(result.stdout, /^Usage: ng-advanced-table-migrate-v9 \[--dry-run\] \[path \.\.\.\]/);
+          assert.equal(readFileSync(join(root, 'src/state.ts'), 'utf8'), source);
+        });
+      }
+    });
+
+    describe('WHEN: it is given an unknown option', () => {
+      for (const flag of ['--dryrun', '-n', '--write']) {
+        it(`THEN: it exits 1 naming ${flag} and changes nothing`, () => {
+          const source = `export const s = { columnPinning: { left: ['id'] } };\n`;
+          const root = createProject({ 'src/state.ts': source });
+          const result = spawnSync(process.execPath, [script, flag, 'src'], { cwd: root, encoding: 'utf8' });
+
+          assert.equal(result.status, 1);
+          assert.match(result.stderr, new RegExp(`Unknown option: ${flag}`));
+          assert.match(result.stderr, /Usage:/);
+          assert.equal(readFileSync(join(root, 'src/state.ts'), 'utf8'), source);
+        });
+      }
     });
 
     describe('WHEN: it is started through the node_modules/.bin link npm creates', () => {

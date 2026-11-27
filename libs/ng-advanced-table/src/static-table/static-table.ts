@@ -149,6 +149,11 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
   public readonly enablePagination = this.state.enablePagination;
   public readonly enableGlobalFilter = this.state.enableGlobalFilter;
   public readonly table = this.state.table;
+
+  public flushTableOptions(): void {
+    this.state.flushTableOptions();
+  }
+
   /** Stable DOM id for the rendered `<table>` element. */
   public readonly tableElementId = this.state.tableElementId;
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
@@ -328,14 +333,15 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
-    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     effect(() => this.state.tableRegionRef.set(this.tableRegionRef()));
 
+    // Seed and options sync come before any effect that reads the table.
     this.state.registerSeedEffect();
+    this.state.registerOptionsSyncEffect();
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();
-    this.state.registerOptionsSyncEffect();
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);

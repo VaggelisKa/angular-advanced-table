@@ -362,14 +362,17 @@ export class NatTableState<TData extends RowData = RowData> {
   // ─── TanStack table instance ───
 
   /**
-   * Options handed to TanStack. A computed of its own so code that needs the
-   * table to see a state change before the next change-detection pass can
-   * apply it synchronously (see `flushTableOptions`): v9's `injectTable`
-   * forwards option changes from an effect, where v8 applied them on read.
+   * Options handed to TanStack. v9's `injectTable` forwards option changes from
+   * an effect, where v8 applied them whenever the table was read, so this class
+   * owns the sync instead: `syncTableOptions` is the one place that calls
+   * `setOptions`, from state commits, the initial seed, and each renderer's
+   * view effect. `injectTable` only reads the options to construct the table.
    */
   private readonly tableOptions = computed(() => this.buildTableOptions());
 
-  public readonly table: Table<TData> = injectTable<NatTableFeatures, TData>(() => this.tableOptions());
+  private lastSyncedTableOptions: TableOptions<NatTableFeatures, TData> | null = null;
+
+  public readonly table: Table<TData> = injectTable<NatTableFeatures, TData>(() => untracked(() => this.tableOptions()));
 
   private buildTableOptions(): TableOptions<NatTableFeatures, TData> {
     return {
@@ -422,9 +425,23 @@ export class NatTableState<TData extends RowData = RowData> {
     };
   }
 
-  /** Applies the current options to the table now instead of on the next effect flush. */
+  /**
+   * Applies the current options to the table now instead of on the next effect
+   * flush, so a read of `table.atoms.<slice>` right after a state change sees it.
+   * Untracked, so calling it from an `effect` adds no dependencies, and a no-op
+   * when the table already has this exact options object.
+   */
   public flushTableOptions(): void {
-    this.table.setOptions((previous) => ({ ...previous, ...this.tableOptions() }));
+    untracked(() => {
+      const options = this.tableOptions();
+
+      if (options === this.lastSyncedTableOptions) {
+        return;
+      }
+
+      this.lastSyncedTableOptions = options;
+      this.table.setOptions((previous) => ({ ...previous, ...options }));
+    });
   }
 
   // ─── Derived TanStack computeds ───
@@ -1068,6 +1085,7 @@ export class NatTableState<TData extends RowData = RowData> {
     this.internalRowSelection.set(normalizeRowSelection(seed.rowSelection, this.selectionMode() === 'multiple'));
     this.internalPagination.set(seed.pagination);
     this.hasSeededInitialState.set(true);
+    this.flushTableOptions();
 
     this.natTableService.notifyStateChange({ ...this.mergedState(), globalFilter: this.userGlobalFilter() });
   }
@@ -1354,16 +1372,14 @@ export class NatTableState<TData extends RowData = RowData> {
    */
   /**
    * Applies the table options in the renderer's own change-detection pass.
-   * Register it after the renderer's input-bridging effects: those are view
-   * effects, while `injectTable`'s own options effect is a root effect that has
-   * already run by then, so without this the first render reads the table with
-   * the previous options (v8 applied options whenever the table was read).
+   * Register it after the renderer's input-bridging and seed effects, which
+   * write the state the options are built from, and before any effect that
+   * reads the table, so those reads and the first render see current options.
    */
   public registerOptionsSyncEffect(): void {
     effect(() => {
-      const options = this.tableOptions();
-
-      untracked(() => this.table.setOptions((previous) => ({ ...previous, ...options })));
+      this.tableOptions();
+      this.flushTableOptions();
     });
   }
 

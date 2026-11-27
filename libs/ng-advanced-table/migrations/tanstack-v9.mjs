@@ -21,19 +21,27 @@ import { fileURLToPath } from 'node:url';
  * stays on `@tanstack/angular-table`.
  */
 const ALIASED_TYPE_ARITY = new Map([
+  ['AccessorColumnDef', 2],
+  ['AccessorFnColumnDef', 2],
+  ['AccessorKeyColumnDef', 2],
   ['Cell', 2],
   ['CellContext', 2],
   ['Column', 2],
   ['ColumnDef', 2],
   ['ColumnDefBase', 2],
+  ['DisplayColumnDef', 2],
   ['FilterFn', 1],
+  ['GroupColumnDef', 2],
   ['Header', 2],
   ['HeaderContext', 2],
   ['HeaderGroup', 1],
+  ['IdentifiedColumnDef', 2],
   ['Row', 1],
   ['RowModel', 1],
   ['SortingFn', 1],
   ['Table', 1],
+  ['TableOptions', 1],
+  ['TableState', 0],
   ['VisibilityState', 0]
 ]);
 
@@ -43,7 +51,7 @@ const ALIASED_TYPE_ARITY = new Map([
 const COLUMN_DEF_KEYS = new Set(['accessorKey', 'accessorFn', 'header', 'cell', 'footer', 'columns', 'meta']);
 
 /** Memoized by TanStack per cell or header, so a stable `props` object. */
-const STABLE_PROPS_CALL = /\.getContext\(\)$/;
+const STABLE_PROPS_CALL = /(\?\.|\.)getContext\(\)$/;
 
 // Maps, not object literals: a lookup such as `RENAMED_METHODS.get(name)` on an
 // object would match inherited names like `toString` or `toLocaleString`.
@@ -102,6 +110,14 @@ const TABLE_STATE_SLICES = new Set([
  */
 const TABLE_RECEIVER_NAME = /table$/i;
 
+const USAGE = `Usage: ng-advanced-table-migrate-v9 [--dry-run] [path ...]
+
+Migrates TypeScript and HTML under each path (default: src) to the TanStack
+Table v9 release of ng-advanced-table.
+
+  --dry-run   List the changes without writing any file.
+  -h, --help  Show this help.`;
+
 const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', '.angular', '.git', '.nx', 'coverage']);
 
 const loadTypeScript = (cwd) => {
@@ -112,17 +128,31 @@ const loadTypeScript = (cwd) => {
   }
 };
 
-const collectFiles = (path, files = []) => {
-  const stats = statSync(path);
+const isMigratedFile = (path) => (extname(path) === '.ts' && !path.endsWith('.d.ts')) || extname(path) === '.html';
 
-  if (stats.isDirectory()) {
-    for (const entry of readdirSync(path)) {
-      if (!SKIPPED_DIRECTORIES.has(entry)) {
-        collectFiles(join(path, entry), files);
+/**
+ * Files under a path given on the command line. Symlinks inside it are never
+ * followed: a dangling or cyclic link would abort or recurse forever, and a
+ * link out of the project would get its target rewritten in place.
+ */
+const collectFiles = (root) => {
+  const files = [];
+  const walk = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+
+      if (entry.isDirectory() && !SKIPPED_DIRECTORIES.has(entry.name)) {
+        walk(path);
+      } else if (entry.isFile() && isMigratedFile(path)) {
+        files.push(path);
       }
     }
-  } else if ((extname(path) === '.ts' && !path.endsWith('.d.ts')) || extname(path) === '.html') {
-    files.push(path);
+  };
+
+  if (statSync(root).isDirectory()) {
+    walk(root);
+  } else if (isMigratedFile(root)) {
+    files.push(root);
   }
 
   return files;
@@ -133,18 +163,62 @@ const isUnknownOrAny = (ts, typeNode) => typeNode.kind === ts.SyntaxKind.Unknown
 const propertyNameText = (ts, name) =>
   ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNoSubstitutionTemplateLiteral(name) ? name.text : null;
 
-/** `*flexRender` bindings whose `props` come from a call; group 1 is the call. */
-const FLEX_RENDER_CALL_PROPS = /\*flexRender[A-Za-z]*="[^"]*\bprops:\s*([\w.]+\([^)]*\))/g;
+/**
+ * `*flexRender` bindings, in double or single quotes, whose `props` come from a
+ * call such as `build()`, `this.helper?.build()`, or `build?.()`; group 1 is the call.
+ */
+const FLEX_RENDER_CALL_PROPS = /\*flexRender[A-Za-z]*=(?:"[^"]*?|'[^']*?)\bprops:\s*((?:[\w$]+(?:\?\.|\.))*[\w$]+(?:\?\.)?\([^)]*\))/g;
 
 const FLEX_RENDER_PROPS_MESSAGE =
   'FlexRender `props` come from a call: make sure it returns the same object until its inputs change (a signal or computed does; a method building a new object makes v9 re-render forever, NG0103).';
 
-const reportFlexRenderProps = (text, report, offset = 0) => {
+const reportFlexRenderProps = (text, report) => {
   for (const match of text.matchAll(FLEX_RENDER_CALL_PROPS)) {
     if (!STABLE_PROPS_CALL.test(match[1])) {
-      report(offset + match.index, FLEX_RENDER_PROPS_MESSAGE);
+      report(match.index, FLEX_RENDER_PROPS_MESSAGE);
     }
   }
+};
+
+/**
+ * For each character of a string or template literal's value, its offset in
+ * the literal's source text (between the quotes). Escapes such as `\"` or
+ * `\u0041` are one value character but several source characters, a line
+ * continuation is none, and a CRLF in a template is one `\n`.
+ */
+const valueToSourceOffsets = (source) => {
+  const offsets = [];
+  let index = 0;
+
+  while (index < source.length) {
+    const character = source[index];
+
+    if (character === '\\') {
+      const next = source[index + 1];
+
+      if (next === '\r' || next === '\n') {
+        index += next === '\r' && source[index + 2] === '\n' ? 3 : 2;
+        continue;
+      }
+
+      offsets.push(index);
+
+      if (next === 'u') {
+        index = source[index + 2] === '{' ? source.indexOf('}', index) + 1 : index + 6;
+      } else if (next === 'x') {
+        index += 4;
+      } else {
+        index += 2;
+      }
+    } else {
+      offsets.push(index);
+      index += character === '\r' && source[index + 1] === '\n' ? 2 : 1;
+    }
+  }
+
+  offsets.push(index);
+
+  return offsets;
 };
 
 /**
@@ -191,14 +265,21 @@ export const migrateTypeScript = (ts, fileName, text) => {
       expression = expression.parent;
     }
 
-    const binary = expression.parent;
+    // The whole `a && b && c` chain: `&&` groups left first, so the
+    // all-selected check may sit in an outer node of the chain.
+    let chain = null;
 
-    return (
-      !!binary &&
-      ts.isBinaryExpression(binary) &&
-      binary.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
-      /getIsAll(Page)?RowsSelected/.test(binary.getText(sourceFile))
-    );
+    while (
+      expression.parent &&
+      (ts.isParenthesizedExpression(expression.parent) ||
+        (ts.isBinaryExpression(expression.parent) && expression.parent.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken))
+    ) {
+      expression = expression.parent;
+
+      if (ts.isBinaryExpression(expression)) chain = expression;
+    }
+
+    return !!chain && /getIsAll(Page)?RowsSelected/.test(chain.getText(sourceFile));
   };
 
   const usesTable = sourceFile.statements.some(
@@ -282,7 +363,7 @@ export const migrateTypeScript = (ts, fileName, text) => {
       const renamed = name && PINNING_KEYS.get(name);
 
       if (!renamed) {
-        if (name) present.add(name);
+        if (name === 'start' || name === 'end') present.add(name);
         continue;
       }
 
@@ -303,6 +384,40 @@ export const migrateTypeScript = (ts, fileName, text) => {
 
       edits.push({ start: lastProperty, end: lastProperty, replacement: `, ${missing.map((key) => `${key}: []`).join(', ')}` });
     }
+  };
+
+  const bindsName = (binding, name) =>
+    ts.isIdentifier(binding)
+      ? binding.text === name
+      : (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding)) &&
+        binding.elements.some((element) => !ts.isOmittedExpression(element) && bindsName(element.name, name));
+
+  const declarationListBinds = (list, name) =>
+    !!list && ts.isVariableDeclarationList(list) && list.declarations.some((declaration) => bindsName(declaration.name, name));
+
+  /** True when `node` opens a scope that declares `name` again (parameter, local, loop or catch variable). */
+  const declaresName = (node, name) => {
+    if (ts.isFunctionLike(node)) {
+      return node.parameters.some((parameter) => bindsName(parameter.name, name));
+    }
+
+    if (ts.isBlock(node) || ts.isCaseClause(node) || ts.isDefaultClause(node)) {
+      return node.statements.some(
+        (statement) =>
+          (ts.isVariableStatement(statement) && declarationListBinds(statement.declarationList, name)) ||
+          ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && statement.name?.text === name)
+      );
+    }
+
+    if (ts.isForStatement(node) || ts.isForInStatement(node) || ts.isForOfStatement(node)) {
+      return declarationListBinds(node.initializer, name);
+    }
+
+    if (ts.isCatchClause(node)) {
+      return !!node.variableDeclaration && bindsName(node.variableDeclaration.name, name);
+    }
+
+    return false;
   };
 
   const rewriteCellContextParameter = (parameter, functionNode) => {
@@ -338,6 +453,11 @@ export const migrateTypeScript = (ts, fileName, text) => {
     replace(valueType, 'unknown');
 
     const visitBody = (node) => {
+      // A nested function or block that declares the same name reads another value.
+      if (declaresName(node, parameterName)) {
+        return;
+      }
+
       if (
         ts.isCallExpression(node) &&
         !node.typeArguments &&
@@ -347,7 +467,10 @@ export const migrateTypeScript = (ts, fileName, text) => {
         node.expression.expression.text === parameterName &&
         ['getValue', 'renderValue'].includes(node.expression.name.text)
       ) {
-        edits.push({ start: node.expression.getEnd(), end: node.expression.getEnd(), replacement: `<${valueTypeText}>` });
+        // `c.getValue?.()` takes its type argument after the `?.`: `c.getValue?.<number>()`.
+        const at = node.questionDotToken ? node.questionDotToken.getEnd() : node.expression.getEnd();
+
+        edits.push({ start: at, end: at, replacement: `<${valueTypeText}>` });
       }
 
       ts.forEachChild(node, visitBody);
@@ -375,7 +498,11 @@ export const migrateTypeScript = (ts, fileName, text) => {
         );
       }
 
-      if (bindings && ts.isNamedImports(bindings) && bindings.elements.some((element) => element.name.text === 'sortingFns')) {
+      if (
+        bindings &&
+        ts.isNamedImports(bindings) &&
+        bindings.elements.some((element) => (element.propertyName ?? element.name).text === 'sortingFns')
+      ) {
         report(
           node.getStart(sourceFile),
           '`sortingFns` is `sortFns` in v9; built-ins are also exported one by one (`sortFn_alphanumeric`, ...).'
@@ -403,13 +530,9 @@ export const migrateTypeScript = (ts, fileName, text) => {
       rewriteColumnPinningLiteral(node.right);
     }
 
-    // state.columnPinning.left / state.columnPinning?.right
-    if (
-      ts.isPropertyAccessExpression(node) &&
-      PINNING_KEYS.get(node.name.text) &&
-      ((ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === 'columnPinning') ||
-        (ts.isIdentifier(node.expression) && /pinning$/i.test(node.expression.text)))
-    ) {
+    // state.columnPinning.left, state.columnPinning?.right, this.columnPinning().left,
+    // state.columnPinning!.left, this.pinning.left
+    if (ts.isPropertyAccessExpression(node) && PINNING_KEYS.get(node.name.text) && /pinning$/i.test(receiverName(node.expression))) {
       replace(node.name, PINNING_KEYS.get(node.name.text));
     }
 
@@ -475,13 +598,16 @@ export const migrateTypeScript = (ts, fileName, text) => {
       const namedLikeTable = TABLE_RECEIVER_NAME.test(receiverName(getState.expression));
 
       if (usesTable && namedLikeTable && TABLE_STATE_SLICES.has(node.name.text)) {
-        replace(node, `${receiver}${optional}atoms.${slice}.get()`);
+        // Only the `.getState().<slice>` tail, so edits inside the receiver still apply.
+        edits.push({ start: getState.expression.getEnd(), end: node.getEnd(), replacement: `${optional}atoms.${slice}.get()` });
       } else if (namedLikeTable || (usesTable && TABLE_STATE_SLICES.has(node.name.text))) {
         report(
           node.getStart(sourceFile),
           `\`${receiver}.getState().${node.name.text}\`: if \`${receiver}\` is a table, read \`${receiver}.atoms.${slice}.get()\` (v9 has no \`getState()\`); otherwise leave it.`
         );
       }
+
+      visit(getState.expression);
 
       return;
     }
@@ -526,7 +652,12 @@ export const migrateTypeScript = (ts, fileName, text) => {
       propertyNameText(ts, node.name) === 'template' &&
       (ts.isNoSubstitutionTemplateLiteral(node.initializer) || ts.isStringLiteral(node.initializer))
     ) {
-      reportFlexRenderProps(node.initializer.text, report, node.initializer.getStart(sourceFile) + 1);
+      // Positions are found in the template's value, then mapped back to the
+      // source text, where escapes and CRLF line ends take other widths.
+      const literalStart = node.initializer.getStart(sourceFile) + 1;
+      const offsets = valueToSourceOffsets(text.slice(literalStart, node.initializer.getEnd() - 1));
+
+      reportFlexRenderProps(node.initializer.text, (position, message) => report(literalStart + offsets[position], message));
     }
 
     ts.forEachChild(node, visit);
@@ -566,16 +697,44 @@ export const applyEdits = (text, edits) => {
 
 export const migrateHtml = (text) => {
   const reports = [];
-  const lineOf = (position) => text.slice(0, position).split('\n').length;
 
-  reportFlexRenderProps(text, (position, message) => reports.push({ line: lineOf(position), column: 1, message }));
+  reportFlexRenderProps(text, (position, message) => {
+    const before = text.slice(0, position);
+
+    reports.push({ line: before.split('\n').length, column: position - before.lastIndexOf('\n'), message });
+  });
 
   return reports;
 };
 
+/** Splits the command line; throws on an option it does not know, before any file is read. */
+const parseArguments = (argv) => {
+  const options = { dryRun: false, help: false, roots: [] };
+
+  for (const argument of argv) {
+    if (argument === '--dry-run') {
+      options.dryRun = true;
+    } else if (argument === '--help' || argument === '-h') {
+      options.help = true;
+    } else if (argument.startsWith('-')) {
+      throw new Error(`Unknown option: ${argument}\n\n${USAGE}`);
+    } else {
+      options.roots.push(argument);
+    }
+  }
+
+  return options;
+};
+
 export const run = (argv, cwd = process.cwd(), log = console.log) => {
-  const dryRun = argv.includes('--dry-run');
-  const roots = argv.filter((argument) => !argument.startsWith('--'));
+  const { dryRun, help, roots } = parseArguments(argv);
+
+  if (help) {
+    log(USAGE);
+
+    return { changedFiles: 0, editCount: 0, manual: [] };
+  }
+
   const ts = loadTypeScript(cwd);
   const files = (roots.length ? roots : ['src']).flatMap((root) => collectFiles(resolve(cwd, root)));
   const manual = [];
@@ -588,10 +747,6 @@ export const run = (argv, cwd = process.cwd(), log = console.log) => {
 
     if (file.endsWith('.html')) {
       manual.push(...migrateHtml(text).map((entry) => ({ file: display, ...entry })));
-      continue;
-    }
-
-    if (!/@tanstack|ng-advanced-table|columnPinning|sortingFn|getState|flexRender|CellContext/.test(text)) {
       continue;
     }
 
