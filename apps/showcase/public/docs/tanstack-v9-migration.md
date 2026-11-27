@@ -4,7 +4,7 @@ The table runs on TanStack Table v9. Most consumer code keeps working unchanged,
 
 | Change                                                                               | Codemod                                           | What is left for you                                       |
 | ------------------------------------------------------------------------------------ | ------------------------------------------------- | ---------------------------------------------------------- |
-| [Column pinning](#column-pinning) uses `start`/`end`, both keys required             | Rewrites keys, reads, `pin()`, and comparisons    | Nothing                                                    |
+| [Column pinning](#column-pinning) uses `start`/`end`, both keys required             | Rewrites keys, reads, `pin()`, and comparisons    | Unclear `pin()` receivers, which it reports                |
 | [Sorting functions](#sorting-functions): `sortingFn` becomes `sortFn`                | Rewrites column definitions                       | Rename uses of the `sortingFns` registry, which it reports |
 | [Reading table state](#reading-table-state): `getState()` is gone                    | Rewrites `table.getState().<slice>` reads         | Whole-state reads and unclear receivers, which it reports  |
 | [Cell renderers](#cell-renderers) typed with a concrete value                        | Retypes the parameter and narrows `getValue<T>()` | Destructured parameters, which it reports                  |
@@ -56,7 +56,7 @@ How it works:
 - **Options.** `--dry-run` is the only option; `--help` prints the usage. Any other option, such as a mistyped `--dryrun`, stops the run before any file is read, so a typo never writes files.
 - **By syntax, not text.** It parses TypeScript with your project's own `typescript` package, so `rect.left`, `style.right`, or an unrelated `{ left: 4 }` stay as they are. It exits with an error if your project has no `typescript` installed.
 - **Only tables.** Other stores have a `getState()` too, so `getState().<slice>` is rewritten only when all three hold: the file imports `ng-advanced-table` or `@tanstack/angular-table`, the receiver is named like a table (`table`, `this.table()`, `ordersTable`), and the slice is a table state slice such as `sorting` or `pagination`. A read that looks like a table read but misses one of these is reported instead; anything else, such as `settingsStore.getState().theme`, is left alone.
-- **Conditional pin sides.** `column.pin(pinned ? false : 'left')` is rewritten too, in either branch.
+- **Only columns get `pin()` rewrites.** Other objects can have a `pin('left')` too, so a `pin()` side is rewritten only on a receiver named like a column (`column`, `col`, `header.column`, `this.column()`, `table.getColumn('id')`), including both branches of `column.pin(pinned ? false : 'left')`. Another receiver is reported in a file that imports the table, and left alone otherwise.
 - **Safe to rerun.** Code that is already on v9 is left alone, so a second run makes no edits.
 - **HTML is report-only.** Templates are checked for `*flexRender` `props` but never edited.
 

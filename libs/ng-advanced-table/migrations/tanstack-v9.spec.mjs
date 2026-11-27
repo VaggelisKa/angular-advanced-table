@@ -349,6 +349,42 @@ describe('FEATURE: TanStack v9 codemod — column pinning', () => {
         it(`THEN: it leaves ${name} alone`, () => assertUnchanged(input));
       }
     });
+
+    describe('WHEN: pin() is called on a receiver named like a column', () => {
+      const cases = [
+        ['a header column', `header.column.pin('left');`, `header.column.pin('start');`],
+        ['a looked-up column', `table.getColumn('id')?.pin('right');`, `table.getColumn('id')?.pin('end');`],
+        ['a column signal', `this.column().pin('left');`, `this.column().pin('start');`],
+        ['a short col variable', `col.pin('right');`, `col.pin('end');`],
+        ['a named column variable', `idColumn.pin('left');`, `idColumn.pin('start');`]
+      ];
+
+      for (const [name, input, expected] of cases) {
+        it(`THEN: it rewrites ${name}`, () => assertMigrates(input, expected));
+      }
+    });
+
+    describe('WHEN: pin() is called on something that may not be a column', () => {
+      const panel = `class Panel { pin(side: 'left' | 'right'): void {} }\nconst panel = new Panel();\npanel.pin('left');`;
+
+      it('THEN: it leaves it alone, without a report, in a file that does not use the table', () => {
+        assertUnchanged(panel);
+        assert.deepEqual(reportMessages(panel), []);
+      });
+
+      it('THEN: it reports it without changing it in a file that uses the table', () => {
+        const input = `import type { ColumnDef } from 'ng-advanced-table';\n${panel}`;
+        const { edits, reports } = migrate(input);
+
+        assert.deepEqual(edits, []);
+        assert.equal(reports.length, 1);
+        assert.match(reports[0].message, /if `panel` is a table column, pin to 'start'\/'end'/);
+      });
+
+      it('THEN: it says nothing about a pin() with no physical side', () => {
+        assert.deepEqual(reportMessages(`import type { ColumnDef } from 'ng-advanced-table';\npanel.pin(false);`), []);
+      });
+    });
   });
 });
 

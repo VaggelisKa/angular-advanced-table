@@ -110,6 +110,14 @@ const TABLE_STATE_SLICES = new Set([
  */
 const TABLE_RECEIVER_NAME = /table$/i;
 
+/**
+ * A `pin()` receiver named like a TanStack column (`column`, `col`,
+ * `header.column`, `this.column()`, `table.getColumn('id')`). Other objects
+ * have a `pin('left')` too, so only these are rewritten; the rest are reported
+ * in files that use the table.
+ */
+const COLUMN_RECEIVER_NAME = /(^col|column)$/i;
+
 const USAGE = `Usage: ng-advanced-table-migrate-v9 [--dry-run] [path ...]
 
 Migrates TypeScript and HTML under each path (default: src) to the TanStack
@@ -543,8 +551,18 @@ export const migrateTypeScript = (ts, fileName, text) => {
       node.expression.name.text === 'pin' &&
       node.arguments.length === 1
     ) {
-      for (const literal of pinSideLiterals(node.arguments[0])) {
-        replace(literal, `'${PINNING_KEYS.get(literal.text)}'`);
+      const sides = pinSideLiterals(node.arguments[0]);
+      const receiver = node.expression.expression;
+
+      if (sides.length > 0 && COLUMN_RECEIVER_NAME.test(receiverName(receiver))) {
+        for (const literal of sides) {
+          replace(literal, `'${PINNING_KEYS.get(literal.text)}'`);
+        }
+      } else if (sides.length > 0 && usesTable) {
+        report(
+          node.getStart(sourceFile),
+          `\`${receiver.getText(sourceFile)}.pin(...)\`: if \`${receiver.getText(sourceFile)}\` is a table column, pin to 'start'/'end' instead of 'left'/'right' (v9 pins to logical edges); otherwise leave it.`
+        );
       }
     }
 
