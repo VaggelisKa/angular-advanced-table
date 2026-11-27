@@ -667,6 +667,18 @@ describe('FEATURE: TanStack v9 codemod — cell renderers', () => {
           `cell: (c: CellContext<R, unknown>) => c.getValue<number>() + c.getValue<number>()`
         ));
 
+      it('THEN: it rewrites a renamed CellContext import', () =>
+        assertMigrates(
+          `import type { CellContext as Ctx } from 'ng-advanced-table';\nconst cell = (c: Ctx<Order, number>) => c.getValue().toFixed(2);`,
+          `import type { CellContext as Ctx } from 'ng-advanced-table';\nconst cell = (c: Ctx<Order, unknown>) => c.getValue<number>().toFixed(2);`
+        ));
+
+      it('THEN: it rewrites a renamed CellContext import it also moves', () =>
+        assertMigrates(
+          `import type { CellContext as Ctx } from '@tanstack/angular-table';\nconst cell = (c: Ctx<Order, number>) => c.getValue().toFixed(2);`,
+          `import type { CellContext as Ctx } from 'ng-advanced-table';\nconst cell = (c: Ctx<Order, unknown>) => c.getValue<number>().toFixed(2);`
+        ));
+
       it('THEN: it leaves reads on other objects alone', () =>
         assertMigrates(
           `cell: (c: CellContext<R, number>) => other.getValue() + c.row.getValue('id')`,
@@ -719,6 +731,12 @@ describe('FEATURE: TanStack v9 codemod — cell renderers', () => {
         assert.deepEqual(edits, []);
         assert.equal(reports.length, 1);
         assert.match(reports[0].message, /getValue<number>\(\)/);
+      });
+
+      it('THEN: it names a renamed CellContext in the report', () => {
+        const input = `import type { CellContext as Ctx } from 'ng-advanced-table';\nconst cell = ({ getValue }: Ctx<Order, number>) => getValue();`;
+
+        assert.match(reportMessages(input)[0], /`Ctx<…, unknown>`/);
       });
     });
   });
@@ -805,6 +823,14 @@ describe('FEATURE: TanStack v9 codemod — imports', () => {
     describe('WHEN: the code already uses the v9 generics or v9-only names', () => {
       const cases = [
         ['Row with a feature argument', `import type { Row } from '@tanstack/angular-table';\ntype R = Row<typeof features, Order>;`],
+        [
+          'an interface that extends a v9 type',
+          `import type { Row } from '@tanstack/angular-table';\ninterface OrderRow extends Row<F, Order> {}`
+        ],
+        [
+          'a class that implements a v9 type',
+          `import type { Column } from '@tanstack/angular-table';\nabstract class OrderColumn implements Column<F, Order, unknown> {}`
+        ],
         [
           'ColumnDef with three arguments',
           `import type { ColumnDef } from '@tanstack/angular-table';\nconst c: ColumnDef<F, Order, number>[] = [];`

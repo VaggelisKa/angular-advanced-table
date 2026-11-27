@@ -247,13 +247,10 @@ export const migrateTypeScript = (ts, fileName, text) => {
   const usedWithMoreTypeArguments = (localName, arity) => {
     let found = false;
     const visitTypes = (node) => {
-      if (
-        !found &&
-        ts.isTypeReferenceNode(node) &&
-        ts.isIdentifier(node.typeName) &&
-        node.typeName.text === localName &&
-        (node.typeArguments?.length ?? 0) > arity
-      ) {
+      // `Row<F, Order>` in a type, or in `extends`/`implements` (an expression with type arguments).
+      const name = ts.isTypeReferenceNode(node) ? node.typeName : ts.isExpressionWithTypeArguments(node) ? node.expression : undefined;
+
+      if (!found && name && ts.isIdentifier(name) && name.text === localName && (node.typeArguments?.length ?? 0) > arity) {
         found = true;
       }
 
@@ -428,12 +425,27 @@ export const migrateTypeScript = (ts, fileName, text) => {
     return false;
   };
 
+  /** Local names of `CellContext`, including aliases such as `CellContext as Ctx`. */
+  const cellContextNames = new Set(['CellContext']);
+
+  for (const statement of sourceFile.statements) {
+    const bindings = ts.isImportDeclaration(statement) ? statement.importClause?.namedBindings : undefined;
+
+    if (bindings && ts.isNamedImports(bindings)) {
+      for (const element of bindings.elements) {
+        if ((element.propertyName ?? element.name).text === 'CellContext') cellContextNames.add(element.name.text);
+      }
+    }
+  }
+
   const rewriteCellContextParameter = (parameter, functionNode) => {
     const type = parameter.type;
 
-    if (!type || !ts.isTypeReferenceNode(type) || type.typeName.getText(sourceFile) !== 'CellContext') {
+    if (!type || !ts.isTypeReferenceNode(type) || !ts.isIdentifier(type.typeName) || !cellContextNames.has(type.typeName.text)) {
       return;
     }
+
+    const contextName = type.typeName.text;
 
     // v8 took <TData, TValue>; three arguments is already v9 (<TFeatures, TData, TValue>).
     if ((type.typeArguments?.length ?? 0) > 2) {
@@ -449,7 +461,7 @@ export const migrateTypeScript = (ts, fileName, text) => {
     if (!ts.isIdentifier(parameter.name)) {
       report(
         parameter.getStart(sourceFile),
-        `Destructured \`CellContext<…, ${valueType.getText(sourceFile)}>\`: type it \`CellContext<…, unknown>\` and read the value with \`getValue<${valueType.getText(sourceFile)}>()\`.`
+        `Destructured \`${contextName}<…, ${valueType.getText(sourceFile)}>\`: type it \`${contextName}<…, unknown>\` and read the value with \`getValue<${valueType.getText(sourceFile)}>()\`.`
       );
 
       return;
