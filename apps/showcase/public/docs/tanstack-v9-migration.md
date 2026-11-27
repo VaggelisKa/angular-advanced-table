@@ -57,7 +57,7 @@ How it works:
 - **By syntax, not text.** It parses TypeScript with your project's own `typescript` package, so `rect.left`, `style.right`, or an unrelated `{ left: 4 }` stay as they are. It exits with an error if your project has no `typescript` installed.
 - **Only tables.** Other stores have a `getState()` too, so `getState().<slice>` is rewritten only when all three hold: the file imports `ng-advanced-table` or `@tanstack/angular-table`, the receiver is named like a table (`table`, `this.table()`, `ordersTable`), and the slice is a table state slice such as `sorting` or `pagination`. A read that looks like a table read but misses one of these is reported instead; anything else, such as `settingsStore.getState().theme`, is left alone.
 - **Only columns get `pin()` rewrites.** Other objects can have a `pin('left')` too, so a `pin()` side is rewritten only on a receiver named like a column (`column`, `col`, `header.column`, `this.column()`, `table.getColumn('id')`), including both branches of `column.pin(pinned ? false : 'left')`. Another receiver is reported in a file that imports the table, and left alone otherwise.
-- **Safe to rerun.** Code that is already on v9 is left alone, so a second run makes no edits.
+- **Safe to rerun.** Code that is already on v9 is left alone, so a second run makes no edits. A TanStack type import stays where it is when the file passes v9's feature-set argument to it, including in `extends` and `implements` clauses.
 - **HTML is report-only.** Templates are checked for `*flexRender` `props` but never edited.
 
 ## What Stays The Same
@@ -173,7 +173,7 @@ A cell function typed with a concrete value no longer fits a column typed `Colum
 { accessorKey: 'total', cell: (context: CellContext<Order, unknown>) => currency.format(context.getValue<number>()) }
 ```
 
-Leaving the parameter untyped also works: `cell: (context) => currency.format(context.getValue<number>())`.
+Leaving the parameter untyped also works: `cell: (context) => currency.format(context.getValue<number>())`. The codemod makes this change for `CellContext` and for a renamed import such as `CellContext as Ctx`.
 
 ## Custom Render Content
 
