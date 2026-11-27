@@ -66,8 +66,14 @@ export class NatTablePagination<TData extends RowData = RowData> {
 
     // Ensure we have a valid page size selected from the available options.
     effect(() => {
-      const selected = this.selectedPageSize();
       const options = this.resolvedPageSizeOptions();
+
+      // This effect can run before the table's own sync in the same pass (a
+      // control placed before <nat-table>), so apply pending state first or a
+      // controlled page size that just changed reads as the old one.
+      this.controller()?.flushTableOptions?.();
+
+      const selected = this.selectedPageSize();
 
       if (options.length > 0 && !options.some((opt) => opt.pageSize === selected)) {
         this.setPageSize(options[0].pageSize);

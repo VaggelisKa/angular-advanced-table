@@ -3,19 +3,27 @@ import type {
   ColumnVisibilityState,
   RowData,
   TableFeatures,
+  AccessorColumnDef as TanStackAccessorColumnDef,
+  AccessorFnColumnDef as TanStackAccessorFnColumnDef,
+  AccessorKeyColumnDef as TanStackAccessorKeyColumnDef,
   Cell as TanStackCell,
   CellContext as TanStackCellContext,
   Column as TanStackColumn,
   ColumnDef as TanStackColumnDef,
   ColumnDefBase as TanStackColumnDefBase,
+  DisplayColumnDef as TanStackDisplayColumnDef,
   FilterFn as TanStackFilterFn,
+  GroupColumnDef as TanStackGroupColumnDef,
   Header as TanStackHeader,
   HeaderContext as TanStackHeaderContext,
   HeaderGroup as TanStackHeaderGroup,
+  IdentifiedColumnDef as TanStackIdentifiedColumnDef,
   Row as TanStackRow,
   RowModel as TanStackRowModel,
   SortFn as TanStackSortFn,
   Table as TanStackTable,
+  TableOptions as TanStackTableOptions,
+  TableState as TanStackTableState,
   columnFilteringFeature,
   columnOrderingFeature,
   columnPinningFeature,
@@ -109,3 +117,44 @@ export type SortingFn<TData extends RowData = RowData> = SortFn<TData>;
 
 /** v8 name of TanStack's `ColumnVisibilityState`, kept so existing state code compiles. */
 export type VisibilityState = ColumnVisibilityState;
+
+export type AccessorColumnDef<TData extends RowData = RowData, TValue extends CellData = CellData> = TanStackAccessorColumnDef<
+  NatTableFeatures,
+  TData,
+  TValue
+>;
+
+export type AccessorFnColumnDef<TData extends RowData = RowData, TValue extends CellData = CellData> = TanStackAccessorFnColumnDef<
+  NatTableFeatures,
+  TData,
+  TValue
+>;
+
+export type AccessorKeyColumnDef<TData extends RowData = RowData, TValue extends CellData = CellData> = TanStackAccessorKeyColumnDef<
+  NatTableFeatures,
+  TData,
+  TValue
+>;
+
+export type DisplayColumnDef<TData extends RowData = RowData, TValue extends CellData = CellData> = TanStackDisplayColumnDef<
+  NatTableFeatures,
+  TData,
+  TValue
+>;
+
+export type GroupColumnDef<TData extends RowData = RowData, TValue extends CellData = CellData> = TanStackGroupColumnDef<
+  NatTableFeatures,
+  TData,
+  TValue
+>;
+
+export type IdentifiedColumnDef<TData extends RowData = RowData, TValue extends CellData = CellData> = TanStackIdentifiedColumnDef<
+  NatTableFeatures,
+  TData,
+  TValue
+>;
+
+export type TableOptions<TData extends RowData = RowData> = TanStackTableOptions<NatTableFeatures, TData>;
+
+/** The whole table state for the library's feature set; v8's `TableState` took no type argument. */
+export type TableState = TanStackTableState<NatTableFeatures>;

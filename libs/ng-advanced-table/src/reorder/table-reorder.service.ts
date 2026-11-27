@@ -7,7 +7,6 @@ import type { ColumnReorderKeyboardDirection, ColumnReorderZone } from '../commo
 import type { Column, HeaderGroup } from '../common/table-features.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
-import { readColumnEntry } from '../utils/column-def.util';
 import { getHeaderRowColumnIds } from '../utils/column-label.util';
 import { getColumnZone, moveItemInArrayCopy } from '../utils/column-order.util';
 import {
@@ -57,67 +56,43 @@ export class NatTableReorderService<TData extends RowData = RowData> {
   // ─── Drag-drop reorder ───
 
   public onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
-    try {
-      if (!this.isLeafHeaderRow(headerGroup)) return;
+    if (!this.isLeafHeaderRow(headerGroup)) return;
 
-      const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
-      const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
+    const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
+    const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
 
-      if (!movingColumnId) {
-        return;
-      }
-
-      const movingColumn = this.state.table.getColumn(movingColumnId);
-
-      if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
-        return;
-      }
-
-      const zone = this.state.getColumnZoneById(movingColumnId);
-
-      if (!zone) {
-        return;
-      }
-
-      const nextVisibleZoneOrder = this.resolveDropZoneOrder(event, rowColumnIds, zone, movingColumnId);
-
-      if (!nextVisibleZoneOrder) {
-        return;
-      }
-
-      const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
-
-      if (!result) return;
-
-      this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
-      this.scrollHeaderIntoView(movingColumnId);
-      // CDK clears the shifted headers' transforms (still under their transition)
-      // and leaves the dragged header in its old slot until change detection
-      // runs, so render the new order now or the row flashes and slides back.
-      renderWithoutTransitions(this.getHeaderElements(), () => this.appRef.tick());
-    } finally {
-      this.restoreDraggedHeaderPinnedOffset(event);
+    if (!movingColumnId) {
+      return;
     }
-  }
 
-  /**
-   * CDK hides the dragged header mid-drag by stomping its inline `left` and
-   * restores it to `''` before emitting `dropped`. Angular rewrites the
-   * `[style.left.px]` host binding only when its value changes, so a rejected
-   * (no-op) drop would leave a pinned header without its sticky offset — it
-   * then scrolls away with the center columns. Re-apply it on every drop.
-   */
-  private restoreDraggedHeaderPinnedOffset(event: CdkDragDrop<string[]>): void {
-    const draggedColumnId = typeof event.item.data === 'string' ? event.item.data : null;
+    const movingColumn = this.state.table.getColumn(movingColumnId);
 
-    if (!draggedColumnId) return;
-
-    const headerElement = this.getHeaderElement(draggedColumnId);
-    const left = readColumnEntry(this.state.columnRenderStates(), draggedColumnId)?.left ?? null;
-
-    if (headerElement && left !== null) {
-      headerElement.style.left = `${left}px`;
+    if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
+      return;
     }
+
+    const zone = this.state.getColumnZoneById(movingColumnId);
+
+    if (!zone) {
+      return;
+    }
+
+    const nextVisibleZoneOrder = this.resolveDropZoneOrder(event, rowColumnIds, zone, movingColumnId);
+
+    if (!nextVisibleZoneOrder) {
+      return;
+    }
+
+    const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+
+    if (!result) return;
+
+    this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
+    this.scrollHeaderIntoView(movingColumnId);
+    // CDK clears the shifted headers' transforms (still under their transition)
+    // and leaves the dragged header in its old slot until change detection
+    // runs, so render the new order now or the row flashes and slides back.
+    renderWithoutTransitions(this.getHeaderElements(), () => this.appRef.tick());
   }
 
   /**

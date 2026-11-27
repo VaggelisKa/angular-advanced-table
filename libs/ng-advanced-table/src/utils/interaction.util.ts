@@ -115,9 +115,16 @@ const PINNED_RIGHT_CLASS = 'is-pinned-right';
 const isPinnedCell = (cell: Element): boolean =>
   cell.classList.contains(PINNED_LEFT_CLASS) || cell.classList.contains(PINNED_RIGHT_CLASS);
 
-/** The horizontal span of `scrollContainer` not covered by the row's sticky pinned siblings. */
+/**
+ * The horizontal span of `scrollContainer` not covered by the row's sticky pinned siblings.
+ * `is-pinned-left`/`is-pinned-right` name the start/end zones, which stick to the physical
+ * right/left edges in a right-to-left table.
+ */
 const resolveUnobscuredSpan = (scrollContainer: HTMLElement, cell: HTMLElement): { left: number; right: number } => {
   const containerRect = scrollContainer.getBoundingClientRect();
+  const isRtl = getComputedStyle(cell).direction === 'rtl';
+  const physicalLeftClass = isRtl ? PINNED_RIGHT_CLASS : PINNED_LEFT_CLASS;
+  const physicalRightClass = isRtl ? PINNED_LEFT_CLASS : PINNED_RIGHT_CLASS;
   let left = containerRect.left;
   let right = containerRect.right;
 
@@ -126,9 +133,9 @@ const resolveUnobscuredSpan = (scrollContainer: HTMLElement, cell: HTMLElement):
       continue;
     }
 
-    if (sibling.classList.contains(PINNED_LEFT_CLASS)) {
+    if (sibling.classList.contains(physicalLeftClass)) {
       left = Math.max(left, sibling.getBoundingClientRect().right);
-    } else if (sibling.classList.contains(PINNED_RIGHT_CLASS)) {
+    } else if (sibling.classList.contains(physicalRightClass)) {
       right = Math.min(right, sibling.getBoundingClientRect().left);
     }
   }
